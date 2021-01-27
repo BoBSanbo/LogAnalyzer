@@ -48,7 +48,7 @@ class LogParser():
         df = df.sort_values(by="time" ,ascending=True)
         for row in set(df.index.tolist()):
             path = "csv/"+ index + "/"+row+".csv"
-            print(df.loc[row])
+            #print(df.loc[row])
             if os.path.isfile(path):
                 df.loc[row].to_csv(path, index=False, mode='a', header=False)
             else :
