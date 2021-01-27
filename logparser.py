@@ -10,7 +10,6 @@ class LogParser():
     def __init__(self, path_dir):
         self.path_dir = path_dir 
         self.file_list = os.listdir(path_dir)
-
         # IP - - [Date]
         self.pattern_2 = re.compile('(\S+) (\S+) (\S+) \[([\w:/]+\s[+\-]\d{4})\] \"(\S+)\s?(\S+)?\s?(\S+)?" (\d{3}) (\S+)')
 
@@ -31,16 +30,26 @@ class LogParser():
 
         df2 = df.sort_values(by=by ,ascending=True)
 
+        # Save Data to CSV
         df2.to_csv("csv/"+filename+".csv", index=False)
 
     def __parse_access_log(self, path, pattern):
         for line in open(path):
             for m in pattern.finditer(line):
                 yield m.groups()
+    
+    def __read_csv(self, path, index):
+        df = pd.read_csv(path)
+        return df
 
+    def parse_by_ip(self, logfile, index):
+        df = self.__read_csv("csv/" + logfile + ".csv", index)
+        df.set_index(index, inplace=True)
+        for row in set(df.index.tolist()):
+            print(df.loc[row])
+            df.loc[row].to_csv("csv/"+ index + "/"+row+".csv", index=False)
 
     # def parseByDate(self):
-    # def parseByIp(self):
     # def parseByUri(self):
     # def parseByExtension(self):
     # def parseByStatus(self):

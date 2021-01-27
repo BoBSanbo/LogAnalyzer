@@ -15,5 +15,11 @@ if __name__=="__main__":
 
     logParser = LogParser(path_dir)
 
+    idx = 0
     for logfile in logParser.file_list:
+        # testing code
+        if idx == 1:
+            break
+        idx += 1
         logParser.parse_to_csv(logfile, by)
+        logParser.parse_by_ip(logfile, "ip1")

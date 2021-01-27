@@ -2,3 +2,4 @@ venv/
 Server2/
 Server3/
 __pycache__/
+csv/*
