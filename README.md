@@ -4,6 +4,10 @@
 
 python -r requirements.txt
 
+### 실행 방법
+
+python main.py [실행할 폴더 경로]
+
 ## Class
 
 - LogParser 
