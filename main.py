@@ -8,8 +8,8 @@ if __name__=="__main__":
     if len(sys.argv) != 2:
         print("Insufficient arguments")
         sys.exit()
-
-    print("Folder path : " + path_dir)
     
-    logparser = LogParser(path_dir)
-    file_list=os.listdir(path_dir)
+    logParser = LogParser(path_dir)
+
+    for logfile in logParser.file_list:
+        logParser.parse_to_csv(logfile, "ip1")

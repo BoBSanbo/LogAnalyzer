@@ -10,7 +10,7 @@ python -r requirements.txt
     로그를 파싱하는 객체
     - def parseByDate()
     - def parseByIp()
-    - def parseByPath()
+    - def parseByUri()
     - def parseByExtension()
     - def parseByStatus()
     - def parseByMethod()
