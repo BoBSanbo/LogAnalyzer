@@ -47,8 +47,13 @@ class LogParser():
         df.set_index(index, inplace=True)
         df = df.sort_values(by="time" ,ascending=True)
         for row in set(df.index.tolist()):
+            path = "csv/"+ index + "/"+row+".csv"
             print(df.loc[row])
-            df.loc[row].to_csv("csv/"+ index + "/"+row+".csv", index=False)
+            if os.path.isfile(path):
+                df.loc[row].to_csv(path, index=False, mode='a', header=False)
+            else :
+                df.loc[row].to_csv(path, index=False)
+            
 
     # def parseByDate(self):
     # def parseByUri(self):
