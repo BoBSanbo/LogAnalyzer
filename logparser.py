@@ -13,18 +13,18 @@ class LogParser():
 
         # IP - - [Date]
         self.pattern_2 = re.compile('(\S+) (\S+) (\S+) \[([\w:/]+\s[+\-]\d{4})\] \"(\S+)\s?(\S+)?\s?(\S+)?" (\d{3}) (\S+)')
-        
+
         # IP - - - [Date]
         self.pattern_3 = re.compile('(\S+) (\S+) (\S+) (\S+) \[([\w:/]+\s[+\-]\d{4})\] \"(\S+)\s?(\S+)?\s?(\S+)?" (\d{3}) (\S+)')
 
     def parse_to_csv(self, filename, by):
         try: 
-            columns = ['ip1','ip2','ip3','ip4','time','request','method','uri', 'status', 'bytes']
+            columns = ['ip1','ip2','ip3','ip4','time','method','uri','protocol', 'status', 'bytes']
             df = pd.DataFrame(self.parse_access_log_3(self.path_dir + "/" + filename), columns=columns)
             if df.empty:
                 raise ValueError
         except ValueError:
-            columns = ['ip1','ip2','ip3','time','request','method','uri', 'status', 'bytes']
+            columns = ['ip1','ip2','ip3','time','method','uri','protocol', 'status', 'bytes']
             df = pd.DataFrame(self.parse_access_log_2(self.path_dir + "/" + filename), columns=columns)
 
         df.time = pd.to_datetime(df.time, format='%d/%b/%Y:%X', exact=False)

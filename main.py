@@ -3,13 +3,17 @@ import os
 import sys
 
 if __name__=="__main__":
-    path_dir = sys.argv[1]
+    by_kinds = ['ip1','time','method','uri','protocol', 'status', 'bytes']
 
-    if len(sys.argv) != 2:
-        print("Insufficient arguments")
+    if len(sys.argv) is not 3 or sys.argv[2] not in by_kinds:
+        print("Insufficient arguments: main.py [path_dir] [sort_type]")
+        print("sort type: 'ip1','time','method','uri','protocol', 'status', 'bytes'")
         sys.exit()
-    
+
+    path_dir = sys.argv[1]
+    by = sys.argv[2]
+
     logParser = LogParser(path_dir)
 
     for logfile in logParser.file_list:
-        logParser.parse_to_csv(logfile, "ip1")
+        logParser.parse_to_csv(logfile, by)

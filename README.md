@@ -6,7 +6,16 @@ python -r requirements.txt
 
 ### 실행 방법
 
-python main.py [실행할 폴더 경로]
+python main.py [실행할 폴더 경로] [sort_type]
+
+Sort type
+- ip1
+- time
+- method
+- uri
+- protocol
+- status 
+- bytes
 
 ## Class
 
