@@ -20,12 +20,12 @@ class LogParser():
     def parse_to_csv(self, filename, by):
         try: 
             columns = ['ip1','ip2','ip3','ip4','time','method','uri','protocol', 'status', 'bytes']
-            df = pd.DataFrame(self.parse_access_log_3(self.path_dir + "/" + filename), columns=columns)
+            df = pd.DataFrame(self.__parse_access_log(self.path_dir + "/" + filename, self.pattern_3), columns=columns)
             if df.empty:
                 raise ValueError
         except ValueError:
             columns = ['ip1','ip2','ip3','time','method','uri','protocol', 'status', 'bytes']
-            df = pd.DataFrame(self.parse_access_log_2(self.path_dir + "/" + filename), columns=columns)
+            df = pd.DataFrame(self.__parse_access_log(self.path_dir + "/" + filename, self.pattern_2), columns=columns)
 
         df.time = pd.to_datetime(df.time, format='%d/%b/%Y:%X', exact=False)
 
@@ -33,16 +33,11 @@ class LogParser():
 
         df2.to_csv("csv/"+filename+".csv", index=False)
 
-    def parse_access_log_2(self, path):
+    def __parse_access_log(self, path, pattern):
         for line in open(path):
-            for m in self.pattern_2.finditer(line):
-            
+            for m in pattern.finditer(line):
                 yield m.groups()
-    
-    def parse_access_log_3(self, path):
-        for line in open(path):
-            for m in self.pattern_3.finditer(line):
-                yield m.groups()
+
 
     # def parseByDate(self):
     # def parseByIp(self):
