@@ -45,6 +45,7 @@ class LogParser():
     def parse_by_ip(self, logfile, index):
         df = self.__read_csv("csv/" + logfile + ".csv", index)
         df.set_index(index, inplace=True)
+        df = df.sort_values(by="time" ,ascending=True)
         for row in set(df.index.tolist()):
             print(df.loc[row])
             df.loc[row].to_csv("csv/"+ index + "/"+row+".csv", index=False)
