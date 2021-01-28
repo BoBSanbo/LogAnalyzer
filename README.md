@@ -7,6 +7,7 @@ python -r requirements.txt
 ### 실행 방법
 
 도움말
+
 python main.py -h
 
 
@@ -17,10 +18,13 @@ usage: python main.py [-h] -p PATH -t {d,f} [-e {csv,txt}] -f {toCsv,byIp,byUri}
 **주의사항**
 
 1. toCsv 함수를 통해 CSV 파일로 만드는 것을 추천
+
     ex) python main.py -p test -t d -f toCsv
 
 2. 만들어진 CSV 파일에 대해 byIP 혹은 byUri 함수를 실행할 것
+
     ex) python main.py -p csv/{filename} -t f -f byIp
+    
         python main.py -p csv -t d -f byUri
 
 

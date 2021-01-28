@@ -78,7 +78,7 @@ class LogParser():
 
                 args = file_and_args[1].split("&")
                 print(directory, filename, args)
-            except IndexError:
+            except IndexError: # args가 없는 경우
                 print(directory, filename)
             except AttributeError:
                 continue
