@@ -17,12 +17,21 @@ if __name__=="__main__":
 
     idx = 0
     for logfile in logParser.file_list:
+   
         # testing code 
         # start
-        # if idx == 1:
-        #     break
-        # idx += 1
+        if idx == 1:
+            break
+        idx += 1
+        print(logfile)
         # end
-        if not os.path.isfile("csv/"+logfile+".csv"):
-            logParser.parse_to_csv(logfile, by)
-        logParser.parse_by_ip(logfile, "ip1")
+        
+        # csv file로 만듦
+        #if not os.path.isfile("csv/"+logfile+".csv"):
+        #    logParser.parse_to_csv(logfile, by)
+
+        # csv 파일을 읽어들여서 ip1로 분류
+        #logParser.parse_by_ip(logfile, "ip1")
+
+        # csv 파일을 읽어들여서 uri 파싱해서 출력만
+        #logParser.parse_by_uri(path_dir, logfile)

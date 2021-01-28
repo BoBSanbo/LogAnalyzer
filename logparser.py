@@ -38,12 +38,12 @@ class LogParser():
             for m in pattern.finditer(line):
                 yield m.groups()
     
-    def __read_csv(self, path, index):
+    def __read_csv(self, path):
         df = pd.read_csv(path)
         return df
 
     def parse_by_ip(self, logfile, index):
-        df = self.__read_csv("csv/" + logfile + ".csv", index)
+        df = self.__read_csv("csv/" + logfile + ".csv")
         df.set_index(index, inplace=True)
         df = df.sort_values(by="time" ,ascending=True)
         for row in set(df.index.tolist()):
@@ -54,12 +54,30 @@ class LogParser():
             else :
                 df.loc[row].to_csv(path, index=False)
             
+    def parse_by_uri(self, path_dir, logfile):
+        df = self.__read_csv(path_dir + "/" + logfile)
+        for i in range(len(df)):
+            try:
+                line = df.loc[i, 'uri']
+                idx = line.rfind('/')
+                directory = line[:idx + 1]
+                parameters = line[idx + 1:]
+                file_and_args = parameters.split("?")
+                filename = file_and_args[0]
+
+                args = file_and_args[1].split("&")
+                print(directory, filename, args)
+            except IndexError:
+                print(directory, filename)
+            except AttributeError:
+                continue
+         
 
     # def parseByDate(self):
-    # def parseByUri(self):
     # def parseByExtension(self):
     # def parseByStatus(self):
     # def parseByMethod(self):
+    # def parse_by_size(self):
 
 
 

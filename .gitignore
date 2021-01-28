@@ -3,3 +3,4 @@ Server2/
 Server3/
 __pycache__/
 csv/*
+.csv
