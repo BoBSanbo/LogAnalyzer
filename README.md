@@ -41,6 +41,10 @@ usage: python main.py [-h] -p PATH -t {d,f} [-e {csv,txt}] -f {toCsv,byIp,byUri}
     - parse_by_ip : csv 파일을 읽어들여 ip별로 분류해주는 메서드
     - parse_by_uri : csv 파일을 읽어들여 uri별로 분류해주는 메서드
 
+**parse_by_ip를 제외한 나머지 메서드들은 분석을 쉽게하기 위해 파일들을 분류하는 것**
+
+**실제로 분석할 때는 아마도 IP별로 분류된 파일들을 위주로 분석되지 않을까 생각**
+
 - Analyzer
     파싱한 로그들을 분석하는 객체
 

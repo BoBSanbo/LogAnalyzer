@@ -3,9 +3,6 @@ import pandas as pd
 import os
 import re
 
-# 입출력은 모두 파일 형태로
-# 1. txt -> csv 이후 csv를 읽어들여 원하는 대로 파싱하는 방법
-
 class LogParser():
     def __init__(self, target_path, target_type, extension):
         self.target_type = target_type
@@ -69,20 +66,33 @@ class LogParser():
         df = self.__read_csv(self.target_path + "/" + logfile)
         for i in range(len(df)):
             try:
-                line = df.loc[i, 'uri']
+                ect = df.iloc[i] # 기존 데이터
+                line = df.loc[i, 'uri'] # uri만 가지는 데이터
                 idx = line.rfind('/')
                 directory = line[:idx + 1]
                 parameters = line[idx + 1:]
                 file_and_args = parameters.split("?")
                 filename = file_and_args[0]
-
+            
                 args = file_and_args[1].split("&")
-                print(directory, filename, args)
+                # print(directory, filename, args)
             except IndexError: # args가 없는 경우
-                print(directory, filename)
+                print('IndexError')
+                args = '-'
             except AttributeError:
+                print('AttributeError')
                 continue
-         
+
+            series = pd.Series([directory, filename, args], index = ["directory", "filename", "args"])   
+            print(series)     
+            series2 = series.append(ect)
+
+            directory = directory.replace('/', '#')
+            path = "uri/"+directory+".csv"
+            if os.path.isfile(path):
+                pd.DataFrame(series2).transpose().to_csv(path, index=False, mode='a', header=False)
+            else :
+                pd.DataFrame(series2).transpose().to_csv(path, index=False)
 
     # def parseByExtension(self):
     # def parseByStatus(self):
