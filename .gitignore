@@ -4,3 +4,4 @@ Server3/
 __pycache__/
 csv/*
 .csv
+csv_temp/

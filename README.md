@@ -6,27 +6,36 @@ python -r requirements.txt
 
 ### 실행 방법
 
-python main.py [실행할 폴더 경로] [sort_type]
+도움말
+python main.py -h
 
-Sort type
-- ip1
-- time
-- method
-- uri
-- protocol
-- status 
-- bytes
+
+실행 방법
+
+usage: python main.py [-h] -p PATH -t {d,f} [-e {csv,txt}] -f {toCsv,byIp,byUri}
+
+**주의사항**
+
+1. toCsv 함수를 통해 CSV 파일로 만드는 것을 추천
+    ex) python main.py -p test -t d -f toCsv
+
+2. 만들어진 CSV 파일에 대해 byIP 혹은 byUri 함수를 실행할 것
+    ex) python main.py -p csv/{filename} -t f -f byIp
+        python main.py -p csv -t d -f byUri
+
+
 
 ## Class
 
 - LogParser 
     로그를 파싱하는 객체
-    - def parseByDate()
-    - def parseByIp()
-    - def parseByUri()
-    - def parseByExtension()
-    - def parseByStatus()
-    - def parseByMethod()
+
+    메서드
+    - __parse_access_log : access log 파일의 정규표현식에 맞춰 파싱하는 메서드
+    - __read_csv : csv를 읽는 메서드
+    - parse_to_csv : txt 파일을 csv로 파싱하는 메서드
+    - parse_by_ip : csv 파일을 읽어들여 ip별로 분류해주는 메서드
+    - parse_by_uri : csv 파일을 읽어들여 uri별로 분류해주는 메서드
 
 - Analyzer
     파싱한 로그들을 분석하는 객체
