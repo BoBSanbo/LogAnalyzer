@@ -68,14 +68,12 @@ class LogParser():
             try:
                 ect = df.iloc[i] # 기존 데이터
                 line = df.loc[i, 'uri'] # uri만 가지는 데이터
-                idx = line.rfind('/')
-                directory = line[:idx + 1]
-                parameters = line[idx + 1:]
-                file_and_args = parameters.split("?")
-                filename = file_and_args[0]
-            
-                args = file_and_args[1].split("&")
-                # print(directory, filename, args)
+                items = line.split("?")
+                idx = items[0].rfind('/')
+                directory = items[0][:idx + 1]
+                filename = items[0][idx + 1:]
+                args = items[1].split("&")
+                print(directory, filename, args)
             except IndexError: # args가 없는 경우
                 print('IndexError')
                 args = '-'
