@@ -93,7 +93,19 @@ class LogParser():
                 pd.DataFrame(series2).transpose().to_csv(path, index=False)
 
     # def parseByExtension(self):
-    # def parseByStatus(self):
+    def parseByStatus(self,filename):
+        df = self.__read_csv('csv/' + filename)
+        df.set_index('status', inplace=True)
+        df = df.sort_values(by="time", ascending=True)
+
+        # 고유한 index set을 탐색
+        for row in set(df.index.tolist()):
+            path = "status/" + str(row) + ".csv"
+            # print(df.loc[row])
+            if os.path.isfile(path):
+                df.loc[row].to_csv(path, index=False, mode='a', header=False)
+            else:
+                df.loc[row].to_csv(path, index=False)
     # def parse_by_size(self):
 
 
