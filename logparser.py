@@ -132,11 +132,10 @@ class LogParser():
 
         for row in range(len(df)):
             uri = df.loc[row, 'uri']
-            print("uri: ",df.loc[row])
-            tags={"..%2F" : 'slash',"%3C" : 'left_bracket',"%3B" : 'right_bracket',"%3E" : 'semicolon'}
+            tags={"..%2F" : 'slash',"%3C" : 'left_bracket',"%3B" : 'semicolon',"%3E" : 'right_bracket'}
             for tag in tags: 
                 try:
-                    if tag in uri:
+                    if tag in uri.lower():
                         path = "tag/" + tags[tag] + ".csv"
                         series = df.loc[row].T
                         if os.path.isfile(path):
@@ -145,7 +144,11 @@ class LogParser():
                             pd.DataFrame(series).transpose().to_csv(path, index=False)
 
                 except TypeError:
-                    print(uri)
+                    print("TypeError",uri)
+                    continue
+                
+                except AttributeError:
+                    print("attribute:",uri)
                     continue
 
 
