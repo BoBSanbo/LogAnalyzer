@@ -56,11 +56,7 @@ class LogParser():
         # 고유한 index set을 탐색
         for row in set(df.index.tolist()):
             path = "ip/"+row+".csv"
-            #print(df.loc[row])
-            if os.path.isfile(path):
-                df.loc[row].to_csv(path, index=False, mode='a', header=False)
-            else :
-                df.loc[row].to_csv(path, index=False)
+            self.__save_to_csv(df.loc[row].transpose(), path)
             
     def parse_by_uri(self, logfile):
         df = self.__read_csv(self.target_path + "/" + logfile)
@@ -87,13 +83,7 @@ class LogParser():
 
             directory = directory.replace('/', '#')
             path = "uri/"+directory+".csv"
-            try: 
-                if os.path.isfile(path):
-                    pd.DataFrame(series2).transpose().to_csv(path, index=False, mode='a', header=False)
-                else :
-                    pd.DataFrame(series2).transpose().to_csv(path, index=False)
-            except OSError:
-                print('OSError')
+            self.__save_to_csv(pd.DataFrame(series2).transpose(), path)
 
     # def parseByExtension(self):
     def parse_by_status(self,filename):
@@ -104,11 +94,7 @@ class LogParser():
         # 고유한 index set을 탐색
         for row in set(df.index.tolist()):
             path = "status/" + str(row) + ".csv"
-            # print(df.loc[row])
-            if os.path.isfile(path):
-                df.loc[row].to_csv(path, index=False, mode='a', header=False)
-            else:
-                df.loc[row].to_csv(path, index=False)
+            self.__save_to_csv(df.loc[row], path)
 
     def parse_by_size(self,filename):
         df = self.__read_csv('csv/' + filename)
@@ -122,10 +108,7 @@ class LogParser():
             except:
                 rowsize=0
             path = "size/" + str(rowsize) + ".csv"
-            if os.path.isfile(path):
-                df.loc[row].to_csv(path, index=False, mode='a', header=False)
-            else:
-                df.loc[row].to_csv(path, index=False)
+            self.__save_to_csv(df.loc[row], path)
 
     def parse_by_tag(self,filename):
         df = self.__read_csv('csv/' + filename)
@@ -138,18 +121,47 @@ class LogParser():
                     if tag in uri.lower():
                         path = "tag/" + tags[tag] + ".csv"
                         series = df.loc[row].T
-                        if os.path.isfile(path):
-                            pd.DataFrame(series).transpose().to_csv(path, index=False, mode='a', header=False)
-                        else:
-                            pd.DataFrame(series).transpose().to_csv(path, index=False)
+                        self.__save_to_csv(pd.Dataframe(series).transpose(), path)
 
                 except TypeError:
                     print("TypeError",uri)
                     continue
-                
+
                 except AttributeError:
                     print("attribute:",uri)
                     continue
+    
+    def parse_by_arg(self, logfile):
+        df = self.__read_csv(self.target_path + "/" + logfile)
+        for i in range(len(df)):
+            try:
+                line = df.loc[i, 'uri'] # uri만 가지는 데이터
+                items = line.split("?")
+                args = items[1].split("&")
+                for arg in args:
+                    arg = arg.split("=")
+                    key = arg[0]
+                    value = arg[1]
 
+                    series = pd.Series([value], index = ["value"])  
+                    path = "arg/"+key+".csv"
+                    self.__save_to_csv(pd.DataFrame(series).transpose(), path)
+                    
+            except IndexError: # args가 없는 경우
+                print('IndexError')
+                continue
+
+            except AttributeError:
+                print('AttributeError')
+                continue
+
+    def __save_to_csv(self, data, path):
+        try: 
+            if os.path.isfile(path):
+                data.to_csv(path, index=False, mode='a', header=False)
+            else :
+                data.to_csv(path, index=False)
+        except OSError: 
+            print('OSError : 올바르지 않은 경로')
 
 
