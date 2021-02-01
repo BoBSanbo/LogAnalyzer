@@ -78,7 +78,7 @@ class LogParser():
                 continue
 
             series = pd.Series([directory, filename, args], index = ["directory", "filename", "args"])   
-            print(series)     
+  
             series2 = series.append(ect)
 
             directory = directory.replace('/', '#')
@@ -135,6 +135,7 @@ class LogParser():
         df = self.__read_csv(self.target_path + "/" + logfile)
         for i in range(len(df)):
             try:
+                ect = df.loc[i,"time":"bytes"]
                 line = df.loc[i, 'uri'] # uri만 가지는 데이터
                 items = line.split("?")
                 args = items[1].split("&")
@@ -143,9 +144,10 @@ class LogParser():
                     key = arg[0]
                     value = arg[1]
 
-                    series = pd.Series([value], index = ["value"])  
+                    series = pd.Series([value, self.__check_type(value) ], index = ["value", "type"])  
+                    series2 = series.append(ect)
                     path = "arg/"+key+".csv"
-                    self.__save_to_csv(pd.DataFrame(series).transpose(), path)
+                    self.__save_to_csv(pd.DataFrame(series2).transpose(), path)
                     
             except IndexError: # args가 없는 경우
                 print('IndexError')
@@ -163,5 +165,13 @@ class LogParser():
                 data.to_csv(path, index=False)
         except OSError: 
             print('OSError : 올바르지 않은 경로')
+    
+    def __check_type(self, data):
+        if data.isalpha():
+            return "alpht"
+        elif data.isdigit():
+            return "digit"
+        else :
+            return "special"
 
 
