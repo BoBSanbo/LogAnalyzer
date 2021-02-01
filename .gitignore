@@ -2,8 +2,12 @@ venv/
 Server2/
 Server3/
 __pycache__/
-../csv/
+csv/
 uri/
 ip/
-.csv
 csv_temp/
+csv_server2/
+
+
+*.csv
+*.zip

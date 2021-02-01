@@ -17,7 +17,7 @@ if __name__=="__main__":
     parser.add_argument('-p', '--path', type=str, required=True, help='The path of thing to parse')
     parser.add_argument('-t', '--type', type=str, required=True, choices=['d', 'f'], help='The type which is Direcotory or File')
     parser.add_argument('-e', '--extension', type=str, default='csv', choices=['csv', 'txt'], help='The type which is csv or txt. Default value is csv')
-    parser.add_argument('-f', '--function', type=str, required=True, choices=['toCsv', 'byIp', 'byUri','byStatus','bySize'], help='The function which is executed')
+    parser.add_argument('-f', '--function', type=str, required=True, choices=['toCsv', 'byIp', 'byUri','byStatus','bySize', 'byTag'], help='The function which is executed')
 
     args = parser.parse_args()
 
@@ -48,3 +48,7 @@ if __name__=="__main__":
         createFolder('./size')
         for logfile in logParser.file_list:
             logParser.parse_by_size(logfile)
+    elif args.function == 'byTag':
+        createFolder('./tag')
+        for logfile in logParser.file_list:
+            logParser.parse_by_tag(logfile)

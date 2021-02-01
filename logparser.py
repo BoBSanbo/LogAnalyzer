@@ -87,10 +87,13 @@ class LogParser():
 
             directory = directory.replace('/', '#')
             path = "uri/"+directory+".csv"
-            if os.path.isfile(path):
-                pd.DataFrame(series2).transpose().to_csv(path, index=False, mode='a', header=False)
-            else :
-                pd.DataFrame(series2).transpose().to_csv(path, index=False)
+            try: 
+                if os.path.isfile(path):
+                    pd.DataFrame(series2).transpose().to_csv(path, index=False, mode='a', header=False)
+                else :
+                    pd.DataFrame(series2).transpose().to_csv(path, index=False)
+            except OSError:
+                print('OSError')
 
     # def parseByExtension(self):
     def parse_by_status(self,filename):
@@ -106,6 +109,7 @@ class LogParser():
                 df.loc[row].to_csv(path, index=False, mode='a', header=False)
             else:
                 df.loc[row].to_csv(path, index=False)
+
     def parse_by_size(self,filename):
         df = self.__read_csv('csv/' + filename)
         df.set_index('bytes', inplace=True)
@@ -122,6 +126,27 @@ class LogParser():
                 df.loc[row].to_csv(path, index=False, mode='a', header=False)
             else:
                 df.loc[row].to_csv(path, index=False)
+
+    def parse_by_tag(self,filename):
+        df = self.__read_csv('csv/' + filename)
+
+        for row in range(len(df)):
+            uri = df.loc[row, 'uri']
+            print("uri: ",df.loc[row])
+            tags={"..%2F" : 'slash',"%3C" : 'left_bracket',"%3B" : 'right_bracket',"%3E" : 'semicolon'}
+            for tag in tags: 
+                try:
+                    if tag in uri:
+                        path = "tag/" + tags[tag] + ".csv"
+                        series = df.loc[row].T
+                        if os.path.isfile(path):
+                            pd.DataFrame(series).transpose().to_csv(path, index=False, mode='a', header=False)
+                        else:
+                            pd.DataFrame(series).transpose().to_csv(path, index=False)
+
+                except TypeError:
+                    print(uri)
+                    continue
 
 
 
