@@ -57,11 +57,14 @@ class LogParser():
         for row in set(df.index.tolist()):
             path = "ip/"+row+".csv"
             #print(df.loc[row])
-            if os.path.isfile(path):
-                df.loc[row].to_csv(path, index=False, mode='a', header=False)
-            else :
-                df.loc[row].to_csv(path, index=False)
-            
+            try:
+                if os.path.isfile(path):
+                    df.loc[row].to_csv(path, index=False, mode='a', header=False)
+                else :
+                    df.loc[row].to_csv(path, index=False)
+            except FileNotFoundError:
+                print('[ERROR]File not found: ' + path)
+
     def parse_by_uri(self, logfile):
         df = self.__read_csv(self.target_path + "/" + logfile)
         for i in range(len(df)):
