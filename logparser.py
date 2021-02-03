@@ -168,7 +168,7 @@ class LogParser():
     
     def __check_type(self, data):
         if data.isalpha():
-            return "alpht"
+            return "alpha"
         elif data.isdigit():
             return "digit"
         else :
