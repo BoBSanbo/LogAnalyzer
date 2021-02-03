@@ -15,4 +15,8 @@ class Analyzer():
     #   3. 똑같은 특수문자를 여러개 사용한 경우? (ex : '))))))))))))))))')
     #   return 악성 로그
     # }
+    # elif (json에 arg가 없는데 status 200인경우)
+    #       그냥 정상
+    # elif (json에 arg가 없고 status 에러인경우 ex 302)
+    #       악성 로그
     

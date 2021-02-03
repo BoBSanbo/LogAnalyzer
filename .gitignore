@@ -4,6 +4,7 @@ Server3/
 __pycache__/
 csv/
 uri/
+arg/
 ip/
 csv_temp/
 csv_server2/
