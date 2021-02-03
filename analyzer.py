@@ -6,7 +6,7 @@ class Analyzer():
 
     # "매개변수 - 타입" 파일을 읽고
     # 매개변수에 그 타입을 매칭 
-    # if(숫자 or 알파벳 && json[arg]==type)
+    # if(숫자 or 알파벳 && type in json[arg])
     #   return 정상 로그
     # elif (special 인 경우)
     # {
