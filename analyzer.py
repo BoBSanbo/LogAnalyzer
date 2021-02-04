@@ -1,8 +1,36 @@
 # parser를 통해 추출된 파일들을 통해 분석하는 클래스
 class Analyzer():
+    def run():
+    # 1. read_csv() : return csv
+    # 2.0. accumulate_by_uri() : return logs
+    # 2.1. analyze_about_bruteforce(): return [True or False] 
+    # 2.2. analyze_about_uri(): return [True or False]
+    # 2.3. analyze_about_param(): return [True or False]
+    """
+    < 설명 >
+    1. IP로 분류된 로그 파일을 읽어들인다.
+    2. 브루트 포스인지를 확인하기 위해 URI 상으로 동일한 로그를 모은다.
+    2.1. 메서드(POST)랑 상태코드를 체크하고, 시간을 확인하여, 브루트 포스인지를 확인한다.
+    2.2. URI 상으로 중요한 파일 요청인지 확인한다.
+    2.3. param 값에 대해 확인한다.(GET)
+
+    """
+
     def read_csv():
+
+    def accumulate_by_uri():
+
+    def analyze_about_bruteforce():
     
-    def analyze_by_param():
+    # 동일한 IP, 동일한 경로로 짧은 시간 내에 얼마나 시도를 했는 지를 분석
+    # POST인 경우 브루트 포스로 볼 수 있다.
+    # GET인 경우, 파라미터값이 어떻게 달라지는 지를 봐야한다.
+
+    def analyze_about_uri():
+    
+    # uri 상으로 중요한 파일을 시도하였고(file.txt), 에러코드를 반환하는 경우
+
+    def analyze_about_param():
 
     # "매개변수 - 타입" 파일을 읽고
     # 매개변수에 그 타입을 매칭 
@@ -20,9 +48,7 @@ class Analyzer():
     # elif (json에 arg가 없고 status 에러인경우 ex 302)
     #       악성 로그
     
+ 
 
 
-    # time의 값이 숫자나 빈공백이 아닌 경우
-    # 
 
-    def analyze_by_path
