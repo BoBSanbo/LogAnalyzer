@@ -32,6 +32,10 @@ class Analyzer():
 
     def analyze_about_param():
 
+    # key 분석
+    # param의 key가 ),(와 같이 특수 문자인지도 확인
+
+    # value 분석
     # "매개변수 - 타입" 파일을 읽고
     # 매개변수에 그 타입을 매칭 
     # if(숫자 or 알파벳 && type in json[arg])
@@ -47,7 +51,7 @@ class Analyzer():
     #       그냥 정상
     # elif (json에 arg가 없고 status 에러인경우 ex 302)
     #       악성 로그
-    
+
  
 
 
