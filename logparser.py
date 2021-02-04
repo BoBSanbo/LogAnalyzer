@@ -131,7 +131,7 @@ class LogParser():
                     print("attribute:",uri)
                     continue
     
-    def parse_by_arg(self, logfile):
+    def parse_by_param(self, logfile):
         df = self.__read_csv(self.target_path + "/" + logfile)
         for i in range(len(df)):
             try:
@@ -146,7 +146,7 @@ class LogParser():
 
                     series = pd.Series([value, self.__check_type(value) ], index = ["value", "type"])  
                     series2 = series.append(ect)
-                    path = "arg/"+key+".csv"
+                    path = "param/"+key+".csv"
                     self.__save_to_csv(pd.DataFrame(series2).transpose(), path)
                     
             except IndexError: # args가 없는 경우

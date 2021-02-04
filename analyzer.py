@@ -2,7 +2,7 @@
 class Analyzer():
     def read_csv():
     
-    def analyze_by_arg_type():
+    def analyze_by_param():
 
     # "매개변수 - 타입" 파일을 읽고
     # 매개변수에 그 타입을 매칭 
@@ -20,3 +20,9 @@ class Analyzer():
     # elif (json에 arg가 없고 status 에러인경우 ex 302)
     #       악성 로그
     
+
+
+    # time의 값이 숫자나 빈공백이 아닌 경우
+    # 
+
+    def analyze_by_path
