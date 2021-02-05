@@ -15,19 +15,25 @@ if __name__=="__main__":
 
     parser = ArgumentParser()
     parser.add_argument('-p', '--path', type=str, required=True, help='The path of thing to parse')
-    parser.add_argument('-t', '--type', type=str, required=True, choices=['d', 'f'], help='The type which is Direcotory or File')
     parser.add_argument('-e', '--extension', type=str, default='csv', choices=['csv', 'txt'], help='The type which is csv or txt. Default value is csv')
     parser.add_argument('-f', '--function', type=str, required=True, choices=['toCsv', 'byIp', 'byUri','byStatus','bySize', 'byTag', 'byParam'], help='The function which is executed')
+    # parser.add_argument('-t', '--type', type=str, required=True, choices=['d', 'f'], help='The type which is Direcotory or File')
 
     args = parser.parse_args()
-
     args.path = args.path.replace('\\', '/')
     
-    if args.type == 'd':
-        logParser = LogParser(args.path, "dir", args.extension)
-    elif args.type == 'f':
-        logParser = LogParser(args.path, "file", args.extension)
+    # if args.type == 'd':
+    #     logParser = LogParser(args.path, "dir", args.extension)
+    # elif args.type == 'f':
+    #     logParser = LogParser(args.path, "file", args.extension)
     
+    if os.path.isdir(args.path):
+        logParser = LogParser(args.path, "dir", args.extension)
+    elif os.path.isfile(args.path):
+        logParser = LogParser(args.path, "file", args.extension)
+    else:
+        raise Exception('Invalid path')
+
     if args.function == 'toCsv':
         createFolder('./csv')
         for logfile in logParser.file_list:
