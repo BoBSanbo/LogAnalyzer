@@ -10,12 +10,37 @@ class WebLog:
         self.method     = dfData["method"]
         self.uri        = dfData["uri"]
         self.protocol   = dfData["protocol"]
-        self.uri        = dfData["status"]
+        self.status        = dfData["status"]
         self.bytes      = dfData["bytes"]
+
+        self.directory  = ""
+        self.filename   = ""
+        self.args = dict()
+
+        self.parsingUri(self.uri)
+
+    def parsingUri(self, uri):
+        try:
+            items = uri.split("?")
+            idx = items[0].rfind('/')
+            self.directory = items[0][:idx + 1]
+            self.filename = items[0][idx + 1:]
             
+            args = items[1].split("&")
+            for arg in args:
+                arg = arg.replace(" ", "")
+                key = arg.split("=")[0]
+                value = str(arg.split("=")[1])
+                self.args[key] = value
+
+        except IndexError: # args가 없는 경우
+            self.args = '-'
+        except AttributeError:
+            print('AttributeError')
     
     def __str__(self):
-        return f"Class log {self.ip}: {self.time} {self.method} {self.uri} {self.protocol} {self.uri} {self.bytes}"
+        return f"Class log {self.ip}: {self.time} {self.method} {self.uri} {self.protocol} {self.uri} {self.bytes}\n \
+                    dir: {self.directory} filename: {self.filename} args: {self.args}"
 
 
 class Analyzer:
@@ -28,6 +53,8 @@ class Analyzer:
     2.3. param 값에 대해 확인한다.(GET)
 
     """
+    def __init__(self):
+        self.status = dict()
 
     def run(self, logParser):
         # 1. read_csv() : return csv
@@ -40,7 +67,8 @@ class Analyzer:
             target = os.path.join(logParser.target_path, logfile)
             for log in self.read_csv(target, logfile):
                 print(log)
-
+                self.analyze_about_bruteforce(log)
+                self.analyze_about_uri(log)
 
     def read_csv(self, target, fileName):
         ip = fileName.replace('.csv', '')
@@ -54,13 +82,14 @@ class Analyzer:
     def accumulate_by_uri(self):
         return
 
-    def analyze_about_bruteforce(self):
+    def analyze_about_bruteforce(self,log):
     # 동일한 IP, 동일한 경로로 짧은 시간 내에 얼마나 시도를 했는 지를 분석
     # POST인 경우 브루트 포스로 볼 수 있다.
     # GET인 경우, 파라미터값이 어떻게 달라지는 지를 봐야한다.
+
         return
 
-    def analyze_about_uri(self):
+    def analyze_about_uri(self,log):
     # uri 상으로 중요한 파일을 시도하였고(file.txt), 에러코드를 반환하는 경우
         return
 
