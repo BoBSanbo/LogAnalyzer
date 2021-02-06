@@ -68,7 +68,8 @@ class Analyzer():
         # 2.1. analyze_about_bruteforce(): return [True or False] 
         # 2.2. analyze_about_uri(): return [True or False]
         # 2.3. analyze_about_param(): return [True or False]
-         for logfile in logParser.file_list:
+
+        for logfile in logParser.file_list:
             self.accumulate_by_uri(logParser, logfile)
             self.analyze_about_bruteforce(logfile)
             # target = os.path.join(logParser.target_path, logfile)
@@ -96,11 +97,15 @@ class Analyzer():
         except KeyError:
             return
 
-    def analyze_about_bruteforce(self,log):
+    def analyze_about_bruteforce(self, logfile):
     # 동일한 IP, 동일한 경로로 짧은 시간 내에 얼마나 시도를 했는 지를 분석
     # POST인 경우 브루트 포스로 볼 수 있다.
     # GET인 경우, 파라미터값이 어떻게 달라지는 지를 봐야한다.
-        folderName = logfile.replace('.csv', '') 
+        folderName = logfile.replace('.csv', '')
+        fileList = os.listdir(folderName)
+        for fileName in fileList:
+            df = pd.read_csv(folderName + "/"+ fileName)
+            print(df)
         
         return
 
