@@ -24,9 +24,9 @@ class WebLog:
         self.filename   = ""
         self.args = dict()
 
-        self.parsingUri(self.uri)
+        self.parsing_ri(self.uri)
 
-    def parsingUri(self, uri):
+    def parsing_uri(self, uri):
         try:
             items = uri.split("?")
             idx = items[0].rfind('/')
@@ -68,16 +68,10 @@ class Analyzer():
         # 2.1. analyze_about_bruteforce(): return [True or False] 
         # 2.2. analyze_about_uri(): return [True or False]
         # 2.3. analyze_about_param(): return [True or False]
-
-        for logfile in logParser.file_list:
+         for logfile in logParser.file_list:
+            self.accumulate_by_uri(logParser, logfile)
+            self.analyze_about_bruteforce(logfile)
             # target = os.path.join(logParser.target_path, logfile)
-            print(logParser.target_path, logfile)
-            ip = logfile.replace('.csv', '')
-            createFolder(ip)
-            try:
-                logParser.parse_by_uri(logfile, ip)
-            except KeyError:
-                continue
             # for log in self.read_csv(target, logfile):
 
             #     print(log)
@@ -88,22 +82,26 @@ class Analyzer():
         ip = fileName.replace('.csv', '')
         df = pd.read_csv(target, error_bad_lines=False)
 
-
         for i in range(len(df)):
             try:
                 yield WebLog(ip, df.iloc[i])
             except KeyError:
                 continue
 
-
-    def accumulate_by_uri(self):
-        return
+    def accumulate_by_uri(self, logParser, logfile):
+        ip = logfile.replace('.csv', '')
+        createFolder(ip)
+        try:
+            logParser.parse_by_uri(logfile, ip)
+        except KeyError:
+            return
 
     def analyze_about_bruteforce(self,log):
     # 동일한 IP, 동일한 경로로 짧은 시간 내에 얼마나 시도를 했는 지를 분석
     # POST인 경우 브루트 포스로 볼 수 있다.
     # GET인 경우, 파라미터값이 어떻게 달라지는 지를 봐야한다.
-
+        folderName = logfile.replace('.csv', '') 
+        
         return
 
     def analyze_about_uri(self,log):
@@ -132,7 +130,7 @@ class Analyzer():
     #       악성 로그
         return
 
-def getParserFromArgs():
+def get_parser_from_args():
     
     parser = ArgumentParser()
     parser.add_argument('-p', '--path', type=str, default='ip', help='The path of thing to parse. Default value is ip')
@@ -154,6 +152,6 @@ if __name__=="__main__":
     from argparse import ArgumentParser
 
     # for debugging
-    logParser = getParserFromArgs()
+    logParser = get_parser_from_args()
     Analyzer().run(logParser)
 
