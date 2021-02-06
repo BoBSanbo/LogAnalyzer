@@ -100,7 +100,7 @@ class Analyzer():
         except KeyError:
             return
 
-    def filter_about_uri(logfile):
+    def filter_about_uri(self,logfile):
         # uri 상으로 한번 거르고(with file.txt), 에러코드를 반환하는 경우
         uri = logfile.replace('.csv', '').replace('#', '/')
         uri = uri[1:]   #파일명이 //어쩌구로 나와서 맨앞에 slash 없애줌
