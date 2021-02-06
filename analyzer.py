@@ -3,6 +3,13 @@ import logparser
 import pandas as pd
 import os
 
+def createFolder(directory):
+    try:
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+    except OSError:
+        print ('Error: Creating directory. ' +  directory)
+
 class WebLog:
     def __init__(self, ip, dfData):
         self.ip         = ip
@@ -63,15 +70,24 @@ class Analyzer():
         # 2.3. analyze_about_param(): return [True or False]
 
         for logfile in logParser.file_list:
-            target = os.path.join(logParser.target_path, logfile)
-            for log in self.read_csv(target, logfile):
-                print(log)
-                self.analyze_about_bruteforce(log)
-                self.analyze_about_uri(log)
+            # target = os.path.join(logParser.target_path, logfile)
+            print(logParser.target_path, logfile)
+            ip = logfile.replace('.csv', '')
+            createFolder(ip)
+            try:
+                logParser.parse_by_uri(logfile, ip)
+            except KeyError:
+                continue
+            # for log in self.read_csv(target, logfile):
+
+            #     print(log)
+            #     self.analyze_about_bruteforce(log)
+            #     self.analyze_about_uri(log)
 
     def read_csv(self, target, fileName):
         ip = fileName.replace('.csv', '')
         df = pd.read_csv(target, error_bad_lines=False)
+
 
         for i in range(len(df)):
             try:

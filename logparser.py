@@ -58,7 +58,7 @@ class LogParser():
             path = "ip/"+row+".csv"
             self.__save_to_csv(df.loc[row, "time" : "bytes"], path)
             
-    def parse_by_uri(self, logfile):
+    def parse_by_uri(self, logfile, folder):
         df = self.__read_csv(self.target_path + "/" + logfile)
         for i in range(len(df)):
             try:
@@ -82,7 +82,7 @@ class LogParser():
             series2 = series.append(ect)
 
             directory = directory.replace('/', '#')
-            path = "uri/"+directory+".csv"
+            path = f"{folder}/"+directory+".csv"
             self.__save_to_csv(pd.DataFrame(series2).transpose(), path)
 
     # def parseByExtension(self):

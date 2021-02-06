@@ -45,7 +45,7 @@ if __name__=="__main__":
     elif args.function == 'byUri':
         createFolder('./uri')
         for logfile in logParser.file_list: 
-            logParser.parse_by_uri(logfile)
+            logParser.parse_by_uri(logfile, 'uri')
     elif args.function == 'byStatus':
         createFolder('./status')
         for logfile in logParser.file_list:
