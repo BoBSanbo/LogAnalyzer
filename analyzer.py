@@ -65,13 +65,15 @@ class Analyzer():
     def run(self, logParser):
         # 1. read_csv() : return csv
         # 2.0. accumulate_by_uri() : return logs
-        # 2.1. analyze_about_bruteforce(): return [True or False] 
-        # 2.2. analyze_about_uri(): return [True or False]
-        # 2.3. analyze_about_param(): return [True or False]
+        # 2.1. filter_about_uri(): return [True or False]
+        # 2.2. filter_about_bruteforce(): return [True or False] 
+        # 2.3. filter_about_param(): return [True or False]
 
         for logfile in logParser.file_list:
             self.accumulate_by_uri(logParser, logfile)
-            self.analyze_about_bruteforce(logfile)
+            self.filter_about_uri(logfile)
+            self.filter_about_bruteforce(logfile)
+            
             # target = os.path.join(logParser.target_path, logfile)
             # for log in self.read_csv(target, logfile):
 
@@ -97,7 +99,12 @@ class Analyzer():
         except KeyError:
             return
 
-    def analyze_about_bruteforce(self, logfile):
+    def filter_about_uri(self,log):
+    # uri 상으로 한번 거르고(with file.txt), 에러코드를 반환하는 경우
+        
+        return
+
+    def filter_about_bruteforce(self, logfile):
     # 동일한 IP, 동일한 경로로 짧은 시간 내에 얼마나 시도를 했는 지를 분석
     # POST인 경우 브루트 포스로 볼 수 있다.
     # GET인 경우, 파라미터값이 어떻게 달라지는 지를 봐야한다.
@@ -109,11 +116,7 @@ class Analyzer():
         
         return
 
-    def analyze_about_uri(self,log):
-    # uri 상으로 중요한 파일을 시도하였고(file.txt), 에러코드를 반환하는 경우
-        return
-
-    def analyze_about_param(self):
+    def filter_about_param(self):
     # key 분석
     # param의 key가 ),(와 같이 특수 문자인지도 확인
 
