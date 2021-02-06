@@ -10,7 +10,7 @@ class WebLog:
         self.method     = dfData["method"]
         self.uri        = dfData["uri"]
         self.protocol   = dfData["protocol"]
-        self.status        = dfData["status"]
+        self.status     = dfData["status"]
         self.bytes      = dfData["bytes"]
 
         self.directory  = ""
@@ -39,11 +39,10 @@ class WebLog:
             print('AttributeError')
     
     def __str__(self):
-        return f"Class log {self.ip}: {self.time} {self.method} {self.uri} {self.protocol} {self.uri} {self.bytes}\n \
+        return f"Class log {self.ip}: {self.time} {self.method} {self.uri} {self.protocol} {self.bytes}\n \
                     dir: {self.directory} filename: {self.filename} args: {self.args}"
 
-
-class Analyzer:
+class Analyzer():
     """
     < 설명 >
     1. IP로 분류된 로그 파일을 읽어들인다.
@@ -73,11 +72,13 @@ class Analyzer:
     def read_csv(self, target, fileName):
         ip = fileName.replace('.csv', '')
         df = pd.read_csv(target, error_bad_lines=False)
-        df = df.sort_values(by="time" ,ascending=True)
 
         for i in range(len(df)):
-            data = WebLog(ip, df.iloc[i])
-            yield data
+            try:
+                yield WebLog(ip, df.iloc[i])
+            except KeyError:
+                continue
+
 
     def accumulate_by_uri(self):
         return

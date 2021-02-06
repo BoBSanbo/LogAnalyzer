@@ -48,15 +48,15 @@ class LogParser():
         df = pd.read_csv(path)
         return df
 
-    def parse_by_ip(self, filename, index):
-        df = self.__read_csv('csv/' + filename)
+    def parse_by_ip(self, logfile, index):
+        df = self.__read_csv(self.target_path + "/" + logfile)
         df.set_index(index, inplace=True)
         df = df.sort_values(by="time" ,ascending=True)
 
         # 고유한 index set을 탐색
         for row in set(df.index.tolist()):
             path = "ip/"+row+".csv"
-            self.__save_to_csv(df.loc[row].transpose(), path)
+            self.__save_to_csv(df.loc[row, "time" : "bytes"], path)
             
     def parse_by_uri(self, logfile):
         df = self.__read_csv(self.target_path + "/" + logfile)
@@ -86,8 +86,8 @@ class LogParser():
             self.__save_to_csv(pd.DataFrame(series2).transpose(), path)
 
     # def parseByExtension(self):
-    def parse_by_status(self,filename):
-        df = self.__read_csv('csv/' + filename)
+    def parse_by_status(self, logfile):
+        df = self.__read_csv(self.target_path + "/" + logfile)
         df.set_index('status', inplace=True)
         df = df.sort_values(by="time", ascending=True)
 
@@ -96,8 +96,8 @@ class LogParser():
             path = "status/" + str(row) + ".csv"
             self.__save_to_csv(df.loc[row], path)
 
-    def parse_by_size(self,filename):
-        df = self.__read_csv('csv/' + filename)
+    def parse_by_size(self,logfile):
+        df = self.__read_csv(self.target_path + "/" + logfile)
         df.set_index('bytes', inplace=True)
         df = df.sort_values(by="time", ascending=True)
         df=df.replace({'bytes':'-'},{'bytes':0}) #결측치 '-'를 0으로 변경
@@ -110,8 +110,8 @@ class LogParser():
             path = "size/" + str(rowsize) + ".csv"
             self.__save_to_csv(df.loc[row], path)
 
-    def parse_by_tag(self,filename):
-        df = self.__read_csv('csv/' + filename)
+    def parse_by_tag(self,logfile):
+        df = self.__read_csv(self.target_path + "/" + logfile)
 
         for row in range(len(df)):
             uri = df.loc[row, 'uri']
@@ -162,7 +162,7 @@ class LogParser():
             if os.path.isfile(path):
                 data.to_csv(path, index=False, mode='a', header=False)
             else :
-                data.to_csv(path, index=False)
+                data.to_csv(path, index=False, header=True)
         except OSError: 
             print('OSError : 올바르지 않은 경로')
     
