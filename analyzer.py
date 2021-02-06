@@ -100,13 +100,17 @@ class Analyzer():
         except KeyError:
             return
 
-    def filter_about_uri(self,logfile):
-    # uri 상으로 한번 거르고(with file.txt), 에러코드를 반환하는 경우
-        uri = logfile.replace('.csv', '').replace('#','/')
-        with open("file.txt",'r',encoding='UTF8') as file:
-            text=file.read()
-            
-        return
+    def filter_about_uri(logfile):
+        # uri 상으로 한번 거르고(with file.txt), 에러코드를 반환하는 경우
+        uri = logfile.replace('.csv', '').replace('#', '/')
+        uri = uri[1:]   #파일명이 //어쩌구로 나와서 맨앞에 slash 없애줌
+        with open("file.txt", 'r', encoding='UTF8') as file:
+            lines = file.readlines()
+            for line in lines:
+                if (line[:-1] in uri):  #맨 뒤에 \n이 들어가서 \n소거
+                    print(line + " Detected in file!")
+                    return True
+        return False
 
     def filter_about_tools(self, logfile):
     # 일정시간마다 작동하는 것과 특정 시간 내에 몇번의 시도가 있는 지를 통해 파악 가능
