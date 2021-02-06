@@ -24,7 +24,7 @@ class WebLog:
         self.filename   = ""
         self.args = dict()
 
-        self.parsing_ri(self.uri)
+        self.parsing_uri(self.uri)
 
     def parsing_uri(self, uri):
         try:
