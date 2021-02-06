@@ -135,7 +135,7 @@ class LogParser():
         df = self.__read_csv(self.target_path + "/" + logfile)
         for i in range(len(df)):
             try:
-                ect = df.loc[i,"time":"bytes"]
+                ect = df.loc[i]
                 line = df.loc[i, 'uri'] # uri만 가지는 데이터
                 items = line.split("?")
                 args = items[1].split("&")
