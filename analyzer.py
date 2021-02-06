@@ -103,7 +103,9 @@ class Analyzer():
     def filter_about_uri(self,logfile):
     # uri 상으로 한번 거르고(with file.txt), 에러코드를 반환하는 경우
         uri = logfile.replace('.csv', '').replace('#','/')
-
+        with open("file.txt",'r',encoding='UTF8') as file:
+            text=file.read()
+            
         return
 
     def filter_about_tools(self, logfile):
