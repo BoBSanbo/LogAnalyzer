@@ -4,6 +4,9 @@ import pandas as pd
 import os
 import shutil
 import datetime
+import json
+import ast
+import re
 
 def createFolder(directory):
     try:
@@ -63,7 +66,8 @@ class Analyzer():
     """
     def __init__(self):
         self.status = dict()
-
+        # with open("ArgDict.json", encoding='UTF8') as jsonfile:
+        #     self.jsonData = json.load(jsonfile)
 
     def run(self, logParser):
         # 1. read_csv() : return csv
@@ -77,6 +81,7 @@ class Analyzer():
             path = logfile.replace('.csv', '')
             createFolder(f"malicious/{path}")
             createFolder(f'malicious/{path}/tools')
+
             for urifile in os.listdir(path):
                 if self.filter_about_uri(urifile):
                     shutil.move(f'{path}/{urifile}', f'malicious/{path}/{urifile}')
@@ -161,27 +166,95 @@ class Analyzer():
         return
 
     def filter_about_params(self, path, logfile):
+        
+        # key 분석
+        # param의 key가 ),(와 같이 특수 문자인지도 확인
+
+        # value 분석
+        # "매개변수 - 타입" 파일을 읽고
+        # 매개변수에 그 타입을 매칭 
+        # if(숫자 or 알파벳 && type in json[arg])
+        #   return 정상 로그
+        # elif (special 인 경우)
+        # {
+        #   1. 태그가 있는 지(..%2F, %3B, %3E, %3C)
+        #   2. 링크 값을 갖는 키가 아닌데, 링크 값을 갖는 경우 (ex: 'year=naver.com')
+        #   3. 똑같은 특수문자를 여러개 사용한 경우? (ex : '))))))))))))))))')
+        #   return 악성 로그
+        # }
+        # elif (json에 arg가 없는데 status 200인경우)
+        #       그냥 정상
+        # elif (json에 arg가 없고 status 에러인경우 ex 302)
+        #       악성 로그
+        
+        dangerParams = [r"%3B", r"%2F", r"%3C", r"%3E", r"%3D", r"%22", r"%3D", r"%2e%2e%2f", r"%2e%2e/", \
+            r"..%2f", r"%2e%2e%5c", r"%2e%2e\\", r"..%5c", r"%252e%252e%255c", r"..%255c", r"..%c0%af", r"..%c1%9c"]        
+        
+        domainRe = r'/^(((http(s?))\:\/\/)?)([0-9a-zA-Z\-]+\.)+[a-zA-Z]{2,6}(\:[0-9]+)?(\/\S*)?$/'
+        domainRegex = re.compile(domainRe)
+
+        ipRe = r'^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$'
+        ipRegex = re.compile(ipRe)
+        
+        # 특수문자 중복 허용 갯수 
+        DUP_ALLOWED = 4
+
         df = pd.read_csv(f'{path}/{logfile}')
 
-    # key 분석
-    # param의 key가 ),(와 같이 특수 문자인지도 확인
+        for i in range(len(df)):
+            row = df.iloc[i, :]
+            if row["args"] == "-": continue
+            args = ast.literal_eval(row["args"])
 
-    # value 분석
-    # "매개변수 - 타입" 파일을 읽고
-    # 매개변수에 그 타입을 매칭 
-    # if(숫자 or 알파벳 && type in json[arg])
-    #   return 정상 로그
-    # elif (special 인 경우)
-    # {
-    #   1. 태그가 있는 지(..%2F, %3B, %3E, %3C)
-    #   2. 링크 값을 갖는 키가 아닌데, 링크 값을 갖는 경우 (ex: 'year=naver.com')
-    #   3. 똑같은 특수문자를 여러개 사용한 경우? (ex : '))))))))))))))))')
-    #   return 악성 로그
-    # }
-    # elif (json에 arg가 없는데 status 200인경우)
-    #       그냥 정상
-    # elif (json에 arg가 없고 status 에러인경우 ex 302)
-    #       악성 로그
+            for arg in args:
+                try:
+                    key = arg.split("=")[0]
+                    value = arg.split("=")[1]
+                except IndexError:
+                    continue
+                
+                if (value.isalpha() | value.isdigit()): continue
+
+                # Notice : json data는 init에서 미리 열어둠
+                # json에 arg가 없는 경우
+                '''
+                try: 
+                    expectedKeyType = self.jsonData[key]
+                
+                except KeyError:
+                    # error code 발생시
+                    if row["status"][0] in [3,4,5]: print("!!danger!! " + value)
+                    else: pass
+                '''
+                for dangerParam in dangerParams:
+                    if dangerParam in value:
+                        # TODO : write file
+                        print("!!danger!! Params " + dangerParam + " in " + arg)
+                        break
+                
+                # key에 url이 없는데 url이 있을경우
+                # TODO : write file
+                if "url" not in key.lower():
+                    # ip regex와 일치할 경우
+                    if None != (ipRegex.search(value.lower())):
+                        print("!!warning!! 허용되지 않은 url " + arg)
+                        break
+
+                    # domain regex와 일치할 경우
+                    if None != (domainRegex.search(value.lower())):
+                        print("!!warning!! 허용되지 않은 url " + arg)
+                        break                            
+
+                cnt = 0
+                dupWord = ''
+                for i in range(len(value)-1):
+                    if value[i] == value[i+1]:
+                        cnt += 1
+                        dupWord = value[i]
+                
+                if (cnt > DUP_ALLOWED) and not (dupWord.isalpha() | dupWord.isdigit()):
+                    print("!!warning!! 특수문자 반복 " + value)
+                    break
         return
 
 def get_parser_from_args():
