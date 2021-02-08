@@ -56,7 +56,7 @@ class LogParser():
         # 고유한 index set을 탐색
         for row in set(df.index.tolist()):
             path = "ip/"+row+".csv"
-            self.__save_to_csv(df.loc[row, "time" : "bytes"], path)
+            self.save_to_csv(df.loc[row, "time" : "bytes"], path)
             
     def parse_by_uri(self, logfile, folder):
         df = self.__read_csv(self.target_path + "/" + logfile)
@@ -83,7 +83,7 @@ class LogParser():
 
             directory = directory.replace('/', '#')
             path = f"{folder}/"+directory+".csv"
-            self.__save_to_csv(pd.DataFrame(series2).transpose(), path)
+            self.save_to_csv(pd.DataFrame(series2).transpose(), path)
 
     # def parseByExtension(self):
     def parse_by_status(self, logfile):
@@ -94,7 +94,7 @@ class LogParser():
         # 고유한 index set을 탐색
         for row in set(df.index.tolist()):
             path = "status/" + str(row) + ".csv"
-            self.__save_to_csv(df.loc[row], path)
+            self.save_to_csv(df.loc[row], path)
 
     def parse_by_size(self,logfile):
         df = self.__read_csv(self.target_path + "/" + logfile)
@@ -108,7 +108,7 @@ class LogParser():
             except:
                 rowsize=0
             path = "size/" + str(rowsize) + ".csv"
-            self.__save_to_csv(df.loc[row], path)
+            self.save_to_csv(df.loc[row], path)
 
     def parse_by_tag(self,logfile):
         df = self.__read_csv(self.target_path + "/" + logfile)
@@ -121,7 +121,7 @@ class LogParser():
                     if tag in uri.lower():
                         path = "tag/" + tags[tag] + ".csv"
                         series = df.loc[row].T
-                        self.__save_to_csv(pd.Dataframe(series).transpose(), path)
+                        self.save_to_csv(pd.Dataframe(series).transpose(), path)
 
                 except TypeError:
                     print("TypeError",uri)
@@ -147,7 +147,7 @@ class LogParser():
                     series = pd.Series([value, self.__check_type(value) ], index = ["value", "type"])  
                     series2 = series.append(ect)
                     path = "param/"+key+".csv"
-                    self.__save_to_csv(pd.DataFrame(series2).transpose(), path)
+                    self.save_to_csv(pd.DataFrame(series2).transpose(), path)
                     
             except IndexError: # args가 없는 경우
                 #print('IndexError')
@@ -157,12 +157,12 @@ class LogParser():
                 #print('AttributeError')
                 continue
 
-    def __save_to_csv(self, data, path):
+    def save_to_csv(self, data, path):
         try: 
             if os.path.isfile(path):
-                data.to_csv(path, index=False, mode='a', header=False)
+                data.to_csv(path, mode='a', header=False, index=True)
             else :
-                data.to_csv(path, index=False, header=True)
+                data.to_csv(path, header=True, index=True)
         except OSError: 
             print('OSError : 올바르지 않은 경로')
     

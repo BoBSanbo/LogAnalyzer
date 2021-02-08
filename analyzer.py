@@ -3,6 +3,7 @@ import logparser
 import pandas as pd
 import os
 import shutil
+import datetime
 
 def createFolder(directory):
     try:
@@ -68,18 +69,19 @@ class Analyzer():
         # 1. read_csv() : return csv
         # 2.0. accumulate_by_uri() : return logs
         # 2.1. filter_about_uri(): return [True or False]
-        # 2.2. filter_about_tools(): return [True or False]  이상행위에 대한 감지
+        # 2.2. filter_about_tools(): return [True or False] 이상행위에 대한 감지
         # 2.3. filter_about_param(): return [True or False] 공격 탐지 관점
         createFolder("malicious")
         for logfile in logParser.file_list:
             self.accumulate_by_uri(logParser, logfile)
             path = logfile.replace('.csv', '')
             createFolder(f"malicious/{path}")
+            createFolder(f'malicious/{path}/tools')
             for urifile in os.listdir(path):
                 if self.filter_about_uri(urifile):
-                    shutil.move(path + "/" + urifile, "malicious/" + urifile)
+                    shutil.move(f'{path}/{urifile}', f'malicious/{path}/{urifile}')
                     continue
-                self.filter_about_tools(path, urifile)
+                self.filter_about_tools(path, urifile, logParser)
             
             # target = os.path.join(logParser.target_path, logfile)
             # for log in self.read_csv(target, logfile):
@@ -118,19 +120,15 @@ class Analyzer():
                     return True
         return False
 
-    def filter_about_tools(self, path, logfile):
+    def filter_about_tools(self, path, logfile, logParser):
     # 일정시간마다 작동하는 것과 특정 시간 내에 몇번의 시도가 있는 지를 통해 파악 가능
     # 동일한 IP, 동일한 경로로 짧은 시간 내에 얼마나 시도를 했는 지를 분석
     # POST인 경우 브루트 포스로 볼 수 있다.
     # GET인 경우, 파라미터값이 어떻게 달라지는 지를 봐야한다.
         df = pd.read_csv(f'{path}/{logfile}')
-        df.set_index('time', inplace=True)
-        
-        for row in set(df.index.tolist()):
-            print(df.loc[row])
-            #print(df.resample('2T'))
 
-        
+
+
         return
 
     def filter_about_param(self):
