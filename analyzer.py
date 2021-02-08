@@ -4,6 +4,8 @@ import pandas as pd
 import os
 import shutil
 import datetime
+import json
+import ast
 
 def createFolder(directory):
     try:
@@ -84,6 +86,14 @@ class Analyzer():
                 self.filter_about_tools(path, urifile, logParser)
                 self.filter_about_params(path, urifile)
 
+    def __check_type(data):
+        if data.isalpha():
+            return "alpha"
+        elif data.isdigit():
+            return "digit"
+        else:
+            return "special"
+
     def read_csv(self, target, fileName):
         ip = fileName.replace('.csv', '')
         df = pd.read_csv(target, error_bad_lines=False)
@@ -160,8 +170,50 @@ class Analyzer():
 
         return
 
-    def filter_about_params(self, path, logfile):
+    def filter_about_params(self,path, logfile):
+        filteredtoken = ["..%2F", "%3B", "%3E", "%3C"]
         df = pd.read_csv(f'{path}/{logfile}')
+        df.set_index(['args', 'status'], inplace=True)
+        with open('ArgDict2.json') as json_file:
+            json_data = json.load(json_file)
+        paramIndex = list(set(df.index.tolist()))
+        for rowtuple in paramIndex:
+            try:
+                row = ast.literal_eval(rowtuple[0])
+                status = rowtuple[1]
+                for param in row:
+                    paramtuple = param.split("=")##paramtuple[0]은 파라미터 key, paramtuple[1]은 value
+                    paramtype = self.__check_type(paramtuple[1])
+                    try:
+                        comparetype = json_data[paramtuple[0]]
+                    except:
+                        print(paramtuple[0] + " not found in json")
+                        # elif (json에 arg가 없고 status 에러인경우 ex 302)
+                        if (status == 302):
+                            print("악성")
+                            # return True
+                        comparetype = paramtype
+                    if (paramtype in comparetype):
+                        if (paramtype == "special"):
+                            #   1. 태그가 있는 지(..%2F, %3B, %3E, %3C)
+                            for token in filteredtoken:
+                                if (token in paramtuple[1]):
+                                    print("mal token " + token + " Detected!")
+                                    print("악성")
+                                    # return True
+                            print("정상")
+                            # return False
+                        # if(숫자 or 알파벳 && type in json[arg])
+                        print("정상")
+                        # return False
+                    else:
+                        print("악성: " + param + " type not matches with " + str(comparetype))
+                        print("악성")
+                        # return True
+            except:
+                print("'-' ignored")
+                print("정상")
+                # return False
 
     # key 분석
     # param의 key가 ),(와 같이 특수 문자인지도 확인
@@ -182,7 +234,7 @@ class Analyzer():
     #       그냥 정상
     # elif (json에 arg가 없고 status 에러인경우 ex 302)
     #       악성 로그
-        return
+
 
 def get_parser_from_args():
     
