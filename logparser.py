@@ -45,7 +45,7 @@ class LogParser():
                 yield m.groups()
     
     def __read_csv(self, path):
-        df = pd.read_csv(path)
+        df = pd.read_csv(path, error_bad_lines=False)
         return df
 
     def parse_by_ip(self, logfile, index):
