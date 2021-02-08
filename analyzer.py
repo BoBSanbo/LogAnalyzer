@@ -2,6 +2,7 @@
 import logparser
 import pandas as pd
 import os
+import shutil
 
 def createFolder(directory):
     try:
@@ -67,13 +68,17 @@ class Analyzer():
         # 1. read_csv() : return csv
         # 2.0. accumulate_by_uri() : return logs
         # 2.1. filter_about_uri(): return [True or False]
-        # 2.2. filter_about_bruteforce(): return [True or False]  이상행위에 대한 감지
+        # 2.2. filter_about_tools(): return [True or False]  이상행위에 대한 감지
         # 2.3. filter_about_param(): return [True or False] 공격 탐지 관점
-
+        createFolder("malicious")
         for logfile in logParser.file_list:
             self.accumulate_by_uri(logParser, logfile)
-            self.filter_about_uri(logfile)
-            self.filter_about_tools(logfile)
+            path = logfile.replace('.csv', '')
+            for urifile in os.listdir(path):
+                if self.filter_about_uri(urifile):
+                    shutil.move(path + "/" + urifile, "malicious/" + urifile)
+                    continue
+                #self.filter_about_tools(urifile)
             
             # target = os.path.join(logParser.target_path, logfile)
             # for log in self.read_csv(target, logfile):
@@ -100,7 +105,7 @@ class Analyzer():
         except KeyError:
             return
 
-    def filter_about_uri(self,logfile):
+    def filter_about_uri(self, logfile):
         # uri 상으로 한번 거르고(with file.txt), 에러코드를 반환하는 경우
         uri = logfile.replace('.csv', '').replace('#', '/')
         uri = uri[1:]   #파일명이 //어쩌구로 나와서 맨앞에 slash 없애줌
@@ -121,7 +126,7 @@ class Analyzer():
         fileList = os.listdir(folderName)
         for fileName in fileList:
             df = pd.read_csv(folderName + "/"+ fileName)
-            print(df)
+            #print(df)
         
         return
 

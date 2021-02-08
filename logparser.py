@@ -71,10 +71,10 @@ class LogParser():
                 args = items[1].split("&")
                 print(directory, filename, args)
             except IndexError: # args가 없는 경우
-                print('IndexError')
+                #print('IndexError')
                 args = '-'
             except AttributeError:
-                print('AttributeError')
+                #print('AttributeError')
                 continue
 
             series = pd.Series([directory, filename, args], index = ["directory", "filename", "args"])   
@@ -150,11 +150,11 @@ class LogParser():
                     self.__save_to_csv(pd.DataFrame(series2).transpose(), path)
                     
             except IndexError: # args가 없는 경우
-                print('IndexError')
+                #print('IndexError')
                 continue
 
             except AttributeError:
-                print('AttributeError')
+                #print('AttributeError')
                 continue
 
     def __save_to_csv(self, data, path):
