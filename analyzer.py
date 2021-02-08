@@ -126,8 +126,36 @@ class Analyzer():
     # POST인 경우 브루트 포스로 볼 수 있다.
     # GET인 경우, 파라미터값이 어떻게 달라지는 지를 봐야한다.
         df = pd.read_csv(f'{path}/{logfile}')
+        df.set_index('time', inplace=True)
+        print(f'{path}/{logfile}')
 
+        timeIndex = list(set(df.index.tolist()))
+        timeIndex.sort()
+        previousTime = timeIndex[0]
+        logs = df.loc[previousTime]
+        if isinstance(logs, pd.Series):
+            logs = pd.DataFrame(logs).transpose()
+        dataQueue = logs
 
+        previousTime = datetime.datetime.strptime(previousTime, '%Y-%m-%d %H:%M:%S')
+        timeIndex.pop(0)
+
+        for row in timeIndex:
+            print(dataQueue)
+            rowTime = datetime.datetime.strptime(row, '%Y-%m-%d %H:%M:%S')
+
+            if rowTime != previousTime + datetime.timedelta(seconds=1):
+                if len(dataQueue) > 5: # 피쳐 값을 제대로 수정하면 될 듯
+                    logParser.save_to_csv(dataQueue, f'malicious/{path}/tools/{logfile}')
+                    df.drop(row, inplace=True)
+                dataQueue = pd.DataFrame()
+                continue
+
+            logs = df.loc[row]
+            if isinstance(logs, pd.Series):
+                logs = pd.DataFrame(logs).transpose()
+            dataQueue = dataQueue.append(logs)
+            previousTime = rowTime
 
         return
 
