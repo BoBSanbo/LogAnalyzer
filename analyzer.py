@@ -70,7 +70,7 @@ class Analyzer():
         # 2.0. accumulate_by_uri() : return logs
         # 2.1. filter_about_uri(): return [True or False]
         # 2.2. filter_about_tools(): return [True or False] 이상행위에 대한 감지
-        # 2.3. filter_about_param(): return [True or False] 공격 탐지 관점
+        # 2.3. filter_about_params(): return [True or False] 공격 탐지 관점
         createFolder("malicious")
         for logfile in logParser.file_list:
             self.accumulate_by_uri(logParser, logfile)
@@ -82,13 +82,7 @@ class Analyzer():
                     shutil.move(f'{path}/{urifile}', f'malicious/{path}/{urifile}')
                     continue
                 self.filter_about_tools(path, urifile, logParser)
-            
-            # target = os.path.join(logParser.target_path, logfile)
-            # for log in self.read_csv(target, logfile):
-
-            #     print(log)
-            #     self.analyze_about_bruteforce(log)
-            #     self.analyze_about_uri(log)
+                self.filter_about_params(path, urifile)
 
     def read_csv(self, target, fileName):
         ip = fileName.replace('.csv', '')
@@ -130,9 +124,15 @@ class Analyzer():
         print(f'{path}/{logfile}')
 
         timeIndex = list(set(df.index.tolist()))
+
         timeIndex.sort()
         previousTime = timeIndex[0]
         logs = df.loc[previousTime]
+        """
+        To do
+        df[df['method'] == 'post'] 추가하기
+        """
+
         if isinstance(logs, pd.Series):
             logs = pd.DataFrame(logs).transpose()
         dataQueue = logs
@@ -141,16 +141,17 @@ class Analyzer():
         timeIndex.pop(0)
 
         for row in timeIndex:
-            print(dataQueue)
             rowTime = datetime.datetime.strptime(row, '%Y-%m-%d %H:%M:%S')
 
+            # 만약 datetime이 연속하지 않다면
             if rowTime != previousTime + datetime.timedelta(seconds=1):
                 if len(dataQueue) > 5: # 피쳐 값을 제대로 수정하면 될 듯
                     logParser.save_to_csv(dataQueue, f'malicious/{path}/tools/{logfile}')
                     df.drop(row, inplace=True)
                 dataQueue = pd.DataFrame()
                 continue
-
+                
+            # 만약 datetime이 연속하다면
             logs = df.loc[row]
             if isinstance(logs, pd.Series):
                 logs = pd.DataFrame(logs).transpose()
@@ -159,7 +160,9 @@ class Analyzer():
 
         return
 
-    def filter_about_param(self):
+    def filter_about_params(self, path, logfile):
+        df = pd.read_csv(f'{path}/{logfile}')
+
     # key 분석
     # param의 key가 ),(와 같이 특수 문자인지도 확인
 
