@@ -74,11 +74,12 @@ class Analyzer():
         for logfile in logParser.file_list:
             self.accumulate_by_uri(logParser, logfile)
             path = logfile.replace('.csv', '')
+            createFolder(f"malicious/{path}")
             for urifile in os.listdir(path):
                 if self.filter_about_uri(urifile):
                     shutil.move(path + "/" + urifile, "malicious/" + urifile)
                     continue
-                #self.filter_about_tools(urifile)
+                self.filter_about_tools(path, urifile)
             
             # target = os.path.join(logParser.target_path, logfile)
             # for log in self.read_csv(target, logfile):
@@ -117,16 +118,18 @@ class Analyzer():
                     return True
         return False
 
-    def filter_about_tools(self, logfile):
+    def filter_about_tools(self, path, logfile):
     # 일정시간마다 작동하는 것과 특정 시간 내에 몇번의 시도가 있는 지를 통해 파악 가능
     # 동일한 IP, 동일한 경로로 짧은 시간 내에 얼마나 시도를 했는 지를 분석
     # POST인 경우 브루트 포스로 볼 수 있다.
     # GET인 경우, 파라미터값이 어떻게 달라지는 지를 봐야한다.
-        folderName = logfile.replace('.csv', '')
-        fileList = os.listdir(folderName)
-        for fileName in fileList:
-            df = pd.read_csv(folderName + "/"+ fileName)
-            #print(df)
+        df = pd.read_csv(f'{path}/{logfile}')
+        df.set_index('time', inplace=True)
+        
+        for row in set(df.index.tolist()):
+            print(df.loc[row])
+            #print(df.resample('2T'))
+
         
         return
 
