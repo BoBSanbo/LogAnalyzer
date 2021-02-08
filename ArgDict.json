@@ -32,7 +32,7 @@
   "chapter": ["digit"],
   "mpage": ["digit"],
   "mspage": ["digit"],
-  "submenu11": ["digit"],
+  "submenu11": ["digit","alpha"],
   "v": ["digit"],
   "retUrl": ["special"],
   "time" : ,

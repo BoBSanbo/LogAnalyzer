@@ -6,7 +6,10 @@ import shutil
 import datetime
 import json
 import ast
+<<<<<<< HEAD
 import re
+=======
+>>>>>>> 17fc72d736072a8706c32849dca4f8bcacf520fd
 
 def createFolder(directory):
     try:
@@ -88,6 +91,14 @@ class Analyzer():
                     continue
                 self.filter_about_tools(path, urifile, logParser)
                 self.filter_about_params(path, urifile)
+
+    def __check_type(data):
+        if data.isalpha():
+            return "alpha"
+        elif data.isdigit():
+            return "digit"
+        else:
+            return "special"
 
     def read_csv(self, target, fileName):
         ip = fileName.replace('.csv', '')
@@ -187,6 +198,54 @@ class Analyzer():
         # elif (json에 arg가 없고 status 에러인경우 ex 302)
         #       악성 로그
         
+
+
+    def filter_about_params(self,path, logfile):
+        filteredtoken = ["..%2F", "%3B", "%3E", "%3C"]
+        df = pd.read_csv(f'{path}/{logfile}')
+        df.set_index(['args', 'status'], inplace=True)
+        with open('ArgDict2.json') as json_file:
+            json_data = json.load(json_file)
+        paramIndex = list(set(df.index.tolist()))
+        for rowtuple in paramIndex:
+            try:
+                row = ast.literal_eval(rowtuple[0])
+                status = rowtuple[1]
+                for param in row:
+                    paramtuple = param.split("=")##paramtuple[0]은 파라미터 key, paramtuple[1]은 value
+                    paramtype = self.__check_type(paramtuple[1])
+                    try:
+                        comparetype = json_data[paramtuple[0]]
+                    except:
+                        print(paramtuple[0] + " not found in json")
+                        # elif (json에 arg가 없고 status 에러인경우 ex 302)
+                        if (status == 302):
+                            print("악성")
+                            # return True
+                        comparetype = paramtype
+                    if (paramtype in comparetype):
+                        if (paramtype == "special"):
+                            #   1. 태그가 있는 지(..%2F, %3B, %3E, %3C)
+                            for token in filteredtoken:
+                                if (token in paramtuple[1]):
+                                    print("mal token " + token + " Detected!")
+                                    print("악성")
+                                    # return True
+                            print("정상")
+                            # return False
+                        # if(숫자 or 알파벳 && type in json[arg])
+                        print("정상")
+                        # return False
+                    else:
+                        print("악성: " + param + " type not matches with " + str(comparetype))
+                        print("악성")
+                        # return True
+            except:
+                print("'-' ignored")
+                print("정상")
+                # return False
+
+        '''
         dangerParams = [r"%3B", r"%2F", r"%3C", r"%3E", r"%3D", r"%22", r"%3D", r"%2e%2e%2f", r"%2e%2e/", \
             r"..%2f", r"%2e%2e%5c", r"%2e%2e\\", r"..%5c", r"%252e%252e%255c", r"..%255c", r"..%c0%af", r"..%c1%9c"]        
         
@@ -198,8 +257,6 @@ class Analyzer():
         
         # 특수문자 중복 허용 갯수 
         DUP_ALLOWED = 4
-
-        df = pd.read_csv(f'{path}/{logfile}')
 
         for i in range(len(df)):
             row = df.iloc[i, :]
@@ -218,13 +275,13 @@ class Analyzer():
                 # Notice : json data는 init에서 미리 열어둠
                 # json에 arg가 없는 경우
                 '''
-                try: 
-                    expectedKeyType = self.jsonData[key]
+                # try: 
+                #     expectedKeyType = self.jsonData[key]
                 
-                except KeyError:
-                    # error code 발생시
-                    if row["status"][0] in [3,4,5]: print("!!danger!! " + value)
-                    else: pass
+                # except KeyError:
+                #     # error code 발생시
+                #     if row["status"][0] in [3,4,5]: print("!!danger!! " + value)
+                #     else: pass
                 '''
                 for dangerParam in dangerParams:
                     if dangerParam in value:
@@ -256,6 +313,9 @@ class Analyzer():
                     print("!!warning!! 특수문자 반복 " + value)
                     break
         return
+        '''
+
+
 
 def get_parser_from_args():
     
