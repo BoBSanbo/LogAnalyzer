@@ -80,16 +80,18 @@ class Analyzer():
             self.accumulate_by_uri(logParser, logfile)
             path = logfile.replace('.csv', '')
             createFolder(f"malicious/{path}")
+            createFolder(f"malicious/{path}/uri")
             createFolder(f'malicious/{path}/tools')
             createFolder(f'malicious/{path}/tools/post')
             createFolder(f'malicious/{path}/tools/get')
             createFolder(f'malicious/{path}/params')
 
-
-
             for urifile in os.listdir(path):
+                root, extension = os.path.splitext(urifile)
+                if extension != '.csv':
+                    continue
                 if self.filter_about_uri(urifile):
-                    shutil.move(f'{path}/{urifile}', f'malicious/{path}/{urifile}')
+                    shutil.move(f'{path}/{urifile}', f'malicious/{path}/uri/{urifile}')
                     continue
                 self.filter_about_tools(path, urifile, logParser)
                 self.filter_about_params(path, urifile, logParser)
@@ -266,7 +268,7 @@ class Analyzer():
                 
                 # key에 url이 없는데 url이 있을경우
                 # TODO : write file 및 key에 대한 분석(ex: index.php와 같은 파일을 밸류로 가질 수 있는 키)
-                if "url" not in key.lower():
+                if "url" not in key.lower() and "domain" not in key.lower():
                     # ip regex와 일치할 경우
                     if None != (ipRegex.search(value.lower())):
                         print("!!warning!! 허용되지 않은 url " + param)
@@ -277,7 +279,9 @@ class Analyzer():
 
                     # domain regex와 일치할 경우
                     if None != (domainRegex.search(value.lower())):
-                        if value.lower().split('.')[-1] not in fileExtensions:
+                        # check extension
+                        root, extension = os.path.splitext(value)
+                        if extension not in fileExtensions:
                             print("!!warning!! 허용되지 않은 url " + param)
                             log = pd.DataFrame(row).transpose()
                             dataQueue = dataQueue.append(log)
