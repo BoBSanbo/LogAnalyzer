@@ -68,16 +68,16 @@ class LogParser():
                 idx = items[0].rfind('/')
                 directory = items[0][:idx + 1]
                 filename = items[0][idx + 1:]
-                args = items[1].split("&")
-                print(directory, filename, args)
-            except IndexError: # args가 없는 경우
+                params = items[1].split("&")
+                print(directory, filename, params)
+            except IndexError: # params 없는 경우
                 #print('IndexError')
-                args = '-'
+                params = '-'
             except AttributeError:
                 #print('AttributeError')
                 continue
 
-            series = pd.Series([directory, filename, args], index = ["directory", "filename", "args"])   
+            series = pd.Series([directory, filename, params], index = ["directory", "filename", "params"])   
   
             series2 = series.append(ect)
 
@@ -138,11 +138,11 @@ class LogParser():
                 ect = df.loc[i]
                 line = df.loc[i, 'uri'] # uri만 가지는 데이터
                 items = line.split("?")
-                args = items[1].split("&")
-                for arg in args:
-                    arg = arg.split("=")
-                    key = arg[0]
-                    value = arg[1]
+                params = items[1].split("&")
+                for param in params:
+                    param = param.split("=")
+                    key = param[0]
+                    value = param[1]
 
                     series = pd.Series([value, self.__check_type(value) ], index = ["value", "type"])  
                     series2 = series.append(ect)
@@ -160,9 +160,15 @@ class LogParser():
     def save_to_csv(self, data, path):
         try: 
             if os.path.isfile(path):
-                data.to_csv(path, mode='a', header=False, index=True)
+                if data.index.name == None:
+                    data.to_csv(path, mode='a', header=False, index=False)
+                else:
+                    data.to_csv(path, mode='a', header=False, index=True)
             else :
-                data.to_csv(path, header=True, index=True)
+                if data.index.name == None:
+                    data.to_csv(path, header=True, index=False)
+                else:
+                    data.to_csv(path, header=True, index=True)
         except OSError: 
             print('OSError : 올바르지 않은 경로')
     

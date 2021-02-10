@@ -59,3 +59,13 @@ usage: python main.py [-h] -p PATH -t {d,f} [-e {csv,txt}] -f {toCsv,byIp,byUri,
 
 - Extarctor
     수집한 최종 결과를 파일로 추출하는 객체
+
+
+### To Do
+
+1. POST인데 파라미터가 있는 경우는?
+2. tools - GET에 대해 정확한 방법
+3. Params
+    1. 특정 키에 대한 밸류 ex: cid인데 CT로 시작하지 않는 경우
+    2. 키 중 파일확장자를 밸류로 가질 수 있는 키
+    3. 파일 확장자에 대한 정보

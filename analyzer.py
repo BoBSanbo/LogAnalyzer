@@ -6,10 +6,7 @@ import shutil
 import datetime
 import json
 import ast
-<<<<<<< HEAD
 import re
-=======
->>>>>>> 17fc72d736072a8706c32849dca4f8bcacf520fd
 
 def createFolder(directory):
     try:
@@ -84,15 +81,20 @@ class Analyzer():
             path = logfile.replace('.csv', '')
             createFolder(f"malicious/{path}")
             createFolder(f'malicious/{path}/tools')
+            createFolder(f'malicious/{path}/tools/post')
+            createFolder(f'malicious/{path}/tools/get')
+            createFolder(f'malicious/{path}/params')
+
+
 
             for urifile in os.listdir(path):
                 if self.filter_about_uri(urifile):
                     shutil.move(f'{path}/{urifile}', f'malicious/{path}/{urifile}')
                     continue
                 self.filter_about_tools(path, urifile, logParser)
-                self.filter_about_params(path, urifile)
+                self.filter_about_params(path, urifile, logParser)
 
-    def __check_type(data):
+    def __check_type(self, data):
         if data.isalpha():
             return "alpha"
         elif data.isdigit():
@@ -136,18 +138,23 @@ class Analyzer():
     # POST인 경우 브루트 포스로 볼 수 있다.
     # GET인 경우, 파라미터값이 어떻게 달라지는 지를 봐야한다.
         df = pd.read_csv(f'{path}/{logfile}')
-        df.set_index('time', inplace=True)
         print(f'{path}/{logfile}')
+        postDf = df[df['method'] == "POST"]
+        print(postDf)
+        getDf = df[df['method'] == "GET"]
+        if not postDf.empty:         
+            self.filter_about_tools_post(postDf, path, logfile, logParser)
+
+    def filter_about_tools_post(self, df, path, logfile, logParser):
+        df.set_index('time', inplace=True)
+        ## 실제 동작할 땐 필요없음(for debugging)
+        df = df.sort_values(by="time" ,ascending=True)
 
         timeIndex = list(set(df.index.tolist()))
 
         timeIndex.sort()
         previousTime = timeIndex[0]
         logs = df.loc[previousTime]
-        """
-        To do
-        df[df['method'] == 'post'] 추가하기
-        """
 
         if isinstance(logs, pd.Series):
             logs = pd.DataFrame(logs).transpose()
@@ -160,10 +167,9 @@ class Analyzer():
             rowTime = datetime.datetime.strptime(row, '%Y-%m-%d %H:%M:%S')
 
             # 만약 datetime이 연속하지 않다면
-            if rowTime != previousTime + datetime.timedelta(seconds=1):
+            if rowTime <= previousTime + datetime.timedelta(seconds=2):
                 if len(dataQueue) > 5: # 피쳐 값을 제대로 수정하면 될 듯
-                    logParser.save_to_csv(dataQueue, f'malicious/{path}/tools/{logfile}')
-                    df.drop(row, inplace=True)
+                    logParser.save_to_csv(dataQueue, f'malicious/{path}/tools/post/{logfile}')
                 dataQueue = pd.DataFrame()
                 continue
                 
@@ -175,8 +181,13 @@ class Analyzer():
             previousTime = rowTime
 
         return
+            
 
-    def filter_about_params(self, path, logfile):
+    def filter_about_tools_get(self, df, path, logfile, logParser):
+        
+        return
+
+    def filter_about_params(self, path, logfile, logParser):
         
         # key 분석
         # param의 key가 ),(와 같이 특수 문자인지도 확인
@@ -195,21 +206,115 @@ class Analyzer():
         # }
         # elif (json에 arg가 없는데 status 200인경우)
         #       그냥 정상
-        # elif (json에 arg가 없고 status 에러인경우 ex 302)
-        #       악성 로그
-        
+        dataQueue = pd.DataFrame()
 
-
-    def filter_about_params(self,path, logfile):
-        filteredtoken = ["..%2F", "%3B", "%3E", "%3C"]
+        isMalicious = False
         df = pd.read_csv(f'{path}/{logfile}')
+
+        dangerParams = [r"%3B", r"%2F", r"%3C", r"%3E", r"%3D", r"%22", r"%27", r"%3D", r"%2e%2e%2f", r"%2e%2e/", \
+            r"..%2f", r"%2e%2e%5c", r"%2e%2e\\", r"..%5c", r"%252e%252e%255c", r"..%255c", r"..%c0%af", r"..%c1%9c"\
+                r';', r'<', r'>', r'"', r"'", r'(', r')']  
+
+        with open('fileExtensions.json') as json_file:
+            fileExtensions = json.load(json_file)["extensions"]
+
+        # ;, /, <, >, =, ", ', ../, ..\
+        domainRe = r'[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)'
+        domainRegex = re.compile(domainRe)
+
+        ipRe = r'^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)|(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]).){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]).){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))$'
+        ipRegex = re.compile(ipRe)
+        
+        # 특수문자 중복 허용 갯수 
+        DUP_ALLOWED = 4
+
+        for i in range(len(df)):
+            row = df.iloc[i, :]
+            if row["params"] == "-": continue
+            params = ast.literal_eval(row["params"])
+
+            for param in params:
+                try:
+                    key = param.split("=")[0]
+                    value = param.split("=")[1]
+                except IndexError:
+                    continue
+                
+                #if (value.isalpha() | value.isdigit()): continue 
+                
+
+                # Notice : json data는 init에서 미리 열어둠
+                # json에 param가 없는 경우
+                
+                # try: 
+                #     expectedKeyType = self.jsonData[key]
+                
+                # except KeyError:
+                #     # error code 발생시
+                #     if row["status"][0] in [3,4,5]: print("!!danger!! " + value)
+                #     else: pass
+                
+                for dangerParam in dangerParams:
+                    if dangerParam in value or dangerParam in key:
+                        # TODO : write file
+                        print("!!danger!! Params " + dangerParam + " in " + param)
+                        log = pd.DataFrame(row).transpose()
+                        dataQueue = dataQueue.append(log)
+                        isMalicious = True
+                        #print(dataQueue)
+                        break
+                
+                # key에 url이 없는데 url이 있을경우
+                # TODO : write file 및 key에 대한 분석(ex: index.php와 같은 파일을 밸류로 가질 수 있는 키)
+                if "url" not in key.lower():
+                    # ip regex와 일치할 경우
+                    if None != (ipRegex.search(value.lower())):
+                        print("!!warning!! 허용되지 않은 url " + param)
+                        log = pd.DataFrame(row).transpose()
+                        dataQueue = dataQueue.append(log)
+                        isMalicious = True
+                        break
+
+                    # domain regex와 일치할 경우
+                    if None != (domainRegex.search(value.lower())):
+                        if value.lower().split('.')[-1] not in fileExtensions:
+                            print("!!warning!! 허용되지 않은 url " + param)
+                            log = pd.DataFrame(row).transpose()
+                            dataQueue = dataQueue.append(log)
+                            isMalicious = True
+                            break                            
+
+                cnt = 0
+                dupWord = ''
+                for i in range(len(value)-1):
+                    if value[i] == value[i+1]:
+                        cnt += 1
+                        dupWord = value[i]
+                
+                if (cnt > DUP_ALLOWED) and not (dupWord.isalpha() | dupWord.isdigit()):
+                    print("!!warning!! 특수문자 반복 " + value)
+                    log = pd.DataFrame(row).transpose()
+                    dataQueue = dataQueue.append(log)
+                    isMalicious = True
+                    break
+
+        if isMalicious:
+            print("=========================================================")
+            print(dataQueue)
+            print("=========================================================")
+            logParser.save_to_csv(dataQueue, f'malicious/{path}/params/{logfile}')
+
+        return
+
+        """
+        filteredtoken = ["..%2F", "%3B", "%3E", "%3C"]
         df.set_index(['args', 'status'], inplace=True)
         with open('ArgDict2.json') as json_file:
             json_data = json.load(json_file)
         paramIndex = list(set(df.index.tolist()))
         for rowtuple in paramIndex:
             try:
-                row = ast.literal_eval(rowtuple[0])
+                row = ast.literal_eval(rowtuple[0]) # "[요소, 요소, 요소]" -> [요소, 요소, 요소]
                 status = rowtuple[1]
                 for param in row:
                     paramtuple = param.split("=")##paramtuple[0]은 파라미터 key, paramtuple[1]은 value
@@ -244,78 +349,7 @@ class Analyzer():
                 print("'-' ignored")
                 print("정상")
                 # return False
-
-        '''
-        dangerParams = [r"%3B", r"%2F", r"%3C", r"%3E", r"%3D", r"%22", r"%3D", r"%2e%2e%2f", r"%2e%2e/", \
-            r"..%2f", r"%2e%2e%5c", r"%2e%2e\\", r"..%5c", r"%252e%252e%255c", r"..%255c", r"..%c0%af", r"..%c1%9c"]        
-        
-        domainRe = r'/^(((http(s?))\:\/\/)?)([0-9a-zA-Z\-]+\.)+[a-zA-Z]{2,6}(\:[0-9]+)?(\/\S*)?$/'
-        domainRegex = re.compile(domainRe)
-
-        ipRe = r'^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$'
-        ipRegex = re.compile(ipRe)
-        
-        # 특수문자 중복 허용 갯수 
-        DUP_ALLOWED = 4
-
-        for i in range(len(df)):
-            row = df.iloc[i, :]
-            if row["args"] == "-": continue
-            args = ast.literal_eval(row["args"])
-
-            for arg in args:
-                try:
-                    key = arg.split("=")[0]
-                    value = arg.split("=")[1]
-                except IndexError:
-                    continue
-                
-                if (value.isalpha() | value.isdigit()): continue
-
-                # Notice : json data는 init에서 미리 열어둠
-                # json에 arg가 없는 경우
-                '''
-                # try: 
-                #     expectedKeyType = self.jsonData[key]
-                
-                # except KeyError:
-                #     # error code 발생시
-                #     if row["status"][0] in [3,4,5]: print("!!danger!! " + value)
-                #     else: pass
-                '''
-                for dangerParam in dangerParams:
-                    if dangerParam in value:
-                        # TODO : write file
-                        print("!!danger!! Params " + dangerParam + " in " + arg)
-                        break
-                
-                # key에 url이 없는데 url이 있을경우
-                # TODO : write file
-                if "url" not in key.lower():
-                    # ip regex와 일치할 경우
-                    if None != (ipRegex.search(value.lower())):
-                        print("!!warning!! 허용되지 않은 url " + arg)
-                        break
-
-                    # domain regex와 일치할 경우
-                    if None != (domainRegex.search(value.lower())):
-                        print("!!warning!! 허용되지 않은 url " + arg)
-                        break                            
-
-                cnt = 0
-                dupWord = ''
-                for i in range(len(value)-1):
-                    if value[i] == value[i+1]:
-                        cnt += 1
-                        dupWord = value[i]
-                
-                if (cnt > DUP_ALLOWED) and not (dupWord.isalpha() | dupWord.isdigit()):
-                    print("!!warning!! 특수문자 반복 " + value)
-                    break
-        return
-        '''
-
-
+        """
 
 def get_parser_from_args():
     
