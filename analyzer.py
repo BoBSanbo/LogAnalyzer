@@ -190,24 +190,6 @@ class Analyzer():
         return
 
     def filter_about_params(self, path, logfile, logParser):
-        
-        # key 분석
-        # param의 key가 ),(와 같이 특수 문자인지도 확인
-
-        # value 분석
-        # "매개변수 - 타입" 파일을 읽고
-        # 매개변수에 그 타입을 매칭 
-        # if(숫자 or 알파벳 && type in json[arg])
-        #   return 정상 로그
-        # elif (special 인 경우)
-        # {
-        #   1. 태그가 있는 지(..%2F, %3B, %3E, %3C)
-        #   2. 링크 값을 갖는 키가 아닌데, 링크 값을 갖는 경우 (ex: 'year=naver.com')
-        #   3. 똑같은 특수문자를 여러개 사용한 경우? (ex : '))))))))))))))))')
-        #   return 악성 로그
-        # }
-        # elif (json에 arg가 없는데 status 200인경우)
-        #       그냥 정상
         dataQueue = pd.DataFrame()
 
         isMalicious = False
@@ -257,7 +239,7 @@ class Analyzer():
                 #     else: pass
                 
                 for dangerParam in dangerParams:
-                    if dangerParam in value or dangerParam in key:
+                    if dangerParam in value or dangerParam in key and 'amp' not in key:
                         # TODO : write file
                         print("!!danger!! Params " + dangerParam + " in " + param)
                         log = pd.DataFrame(row).transpose()
@@ -266,6 +248,14 @@ class Analyzer():
                         #print(dataQueue)
                         break
                 
+                """
+                ls와 같이 명령어를 밸류로 가지는 경우
+                for instruction in instructions:
+
+                밸류로 script 문법을 가지는 경우 ex: res.end(require('fs').readdirSync('..').toString())
+                for script in scripts:
+
+                """
                 # key에 url이 없는데 url이 있을경우
                 # TODO : write file 및 key에 대한 분석(ex: index.php와 같은 파일을 밸류로 가질 수 있는 키)
                 if "url" not in key.lower() and "domain" not in key.lower():

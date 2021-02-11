@@ -66,6 +66,11 @@ usage: python main.py [-h] -p PATH -t {d,f} [-e {csv,txt}] -f {toCsv,byIp,byUri,
 1. POST인데 파라미터가 있는 경우는?
 2. tools - GET에 대해 정확한 방법
 3. Params
-    1. 특정 키에 대한 밸류 ex: cid인데 CT로 시작하지 않는 경우
-    2. 키 중 파일확장자를 밸류로 가질 수 있는 키
-    3. 파일 확장자에 대한 정보
+    1. 키 중 파일확장자를 밸류로 가질 수 있는 키
+    2. 파일 확장자에 대한 정보
+    3. ls와 같이 명령어를 밸류로 가지는 경우
+    4. 밸류로 script 문법을 가지는 경우 ex: res.end(require('fs').readdirSync('..').toString()) / union select -> cuid.csv를 살펴볼 것
+    5. 특정 문자를 여러번 반복하면?? -> 현재 특수문자지만, 특정 한 문자(숫자 제외)를 반복하는 거면 공격이라고 봐도 되지 않을까?
+    6. id가 들어간 key에 대해 특수문자가 2(or 3)개 이상 나오는 경우? 
+    7. status가 1 or 0 시도를 했을 때, 모두 302를 리턴했다..
+4. size 특정 사이즈 크기 이상이면 ??
