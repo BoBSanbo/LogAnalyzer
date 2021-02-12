@@ -1,0 +1,10 @@
+{
+    "scripts" :[
+        "select", 
+        "union",
+        "require",
+        "where",
+        "join",
+        "exec"
+    ]
+}

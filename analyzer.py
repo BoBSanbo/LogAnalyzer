@@ -195,14 +195,14 @@ class Analyzer():
         isMalicious = False
         df = pd.read_csv(f'{path}/{logfile}')
 
-        dangerParams = [r"%3B", r"%2F", r"%3C", r"%3E", r"%3D", r"%22", r"%27", r"%3D", r"%2e%2e%2f", r"%2e%2e/", \
+        # ;, <, >, =, ", ', ../, ..\
+        dangerParams = [r"%3B", r"%3C", r"%3E", r"%3D", r"%22", r"%27", r"%3D", r"%2e%2e%2f", r"%2e%2e/", \
             r"..%2f", r"%2e%2e%5c", r"%2e%2e\\", r"..%5c", r"%252e%252e%255c", r"..%255c", r"..%c0%af", r"..%c1%9c"\
                 r';', r'<', r'>', r'"', r"'", r'(', r')']  
 
         with open('fileExtensions.json') as json_file:
             fileExtensions = json.load(json_file)["extensions"]
 
-        # ;, /, <, >, =, ", ', ../, ..\
         domainRe = r'[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)'
         domainRegex = re.compile(domainRe)
 
@@ -248,14 +248,6 @@ class Analyzer():
                         #print(dataQueue)
                         break
                 
-                """
-                ls와 같이 명령어를 밸류로 가지는 경우
-                for instruction in instructions:
-
-                밸류로 script 문법을 가지는 경우 ex: res.end(require('fs').readdirSync('..').toString())
-                for script in scripts:
-
-                """
                 # key에 url이 없는데 url이 있을경우
                 # TODO : write file 및 key에 대한 분석(ex: index.php와 같은 파일을 밸류로 가질 수 있는 키)
                 if "url" not in key.lower() and "domain" not in key.lower():
@@ -285,12 +277,55 @@ class Analyzer():
                         cnt += 1
                         dupWord = value[i]
                 
-                if (cnt > DUP_ALLOWED) and not (dupWord.isalpha() | dupWord.isdigit()):
-                    print("!!warning!! 특수문자 반복 " + value)
+                if (cnt > DUP_ALLOWED) and not dupWord.isdigit():
+                    print("!!warning!! 특정 문자 반복 " + value)
                     log = pd.DataFrame(row).transpose()
                     dataQueue = dataQueue.append(log)
                     isMalicious = True
                     break
+
+                """
+                ls와 같이 명령어를 밸류로 가지는 경우
+                for instruction in instructions:
+
+                밸류로 script 문법을 가지는 경우 ex: res.end(require('fs').readdirSync('..').toString())
+                for script in scripts:
+
+                """
+                ID_DUP_ALLOWED = 1
+
+                if "id" in key.lower():
+                    cnt = 0
+                    for i in range(len(value)):
+                        if value[i].isdigit() or value[i].isalpha():
+                            cnt = 0
+                            continue
+                        
+                        cnt += 1
+                        
+                    if cnt > ID_DUP_ALLOWED:
+                        print("!!warning!! ID 키에 대해 밸류에서 특정 문자 반복 " + value)
+                        log = pd.DataFrame(row).transpose()
+                        dataQueue = dataQueue.append(log)
+                        isMalicious = True
+                        break
+                
+                
+
+                if "year" in key.lower() or "month" in key.lower() \
+                    or "day" in key.lower() or "time" == key.lower():
+                    for i in range(len(value)):
+                        if value[i].isdigit():
+                            continue
+                        isMalicious = True
+
+                    if isMalicious:
+                        print("!!warning!! Year, Month, Day 키에 대해 밸류에서 문자 발견 " + value)
+                        log = pd.DataFrame(row).transpose()
+                        dataQueue = dataQueue.append(log)
+                        isMalicious = True
+                        break
+                        
 
         if isMalicious:
             print("=========================================================")
