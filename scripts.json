@@ -5,6 +5,13 @@
         "require",
         "where",
         "join",
-        "exec"
+        "exec",
+        "substr",
+        "substring",
+        "drop",
+        "version",
+        "information_schema",
+        "group by",
+        "cmd"
     ]
 }
