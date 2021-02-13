@@ -1,6 +1,16 @@
 {
     "instructions" :[
         "ls", 
-        "sleep"
+        "sleep",
+        "rm",
+        "rmdir",
+        "rm -rf",
+        "ls -al",
+        "scp",
+        "ssh",
+        "reboot",
+        "sudo",
+        "mv",
+        "cp"
     ]
 }
