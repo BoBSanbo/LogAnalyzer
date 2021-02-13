@@ -1,4 +1,4 @@
 {
-    "extensions" : [".jsp", ".css", ".asp", ".js", ".html", ".php", ".png", ".xlsx", ".csv", ".do",
-    ".gif", ".png", ".jpg"]
+    "extensions" : [".jsp", ".css", ".asp", ".js", ".html", ".php", ".xlsx", ".csv", ".do",
+    ".gif", ".png", ".jpg",".pdf",".docx",".aspx",".ico",".zip","jpeg",".txt",".gif"]
 }
