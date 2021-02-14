@@ -15,6 +15,14 @@ def createFolder(directory):
     except OSError:
         print ('Error: Creating directory. ' +  directory)
 
+def createFolderInMalicious(path):
+    createFolder(f"malicious/{path}")
+    createFolder(f"malicious/{path}/uri")
+    createFolder(f'malicious/{path}/tools')
+    createFolder(f'malicious/{path}/tools/post')
+    createFolder(f'malicious/{path}/tools/get')
+    createFolder(f'malicious/{path}/params')
+
 class WebLog:
     def __init__(self, ip, dfData):
         self.ip         = ip
@@ -55,36 +63,21 @@ class WebLog:
                     dir: {self.directory} filename: {self.filename} args: {self.args}"
 
 class Analyzer():
-    """
-    < 설명 >
-    1. IP로 분류된 로그 파일을 읽어들인다.
-    2. 브루트 포스인지를 확인하기 위해 URI 상으로 동일한 로그를 모은다.
-    2.1. 메서드(POST)랑 상태코드를 체크하고, 시간을 확인하여, 브루트 포스인지를 확인한다.
-    2.2. URI 상으로 중요한 파일 요청인지 확인한다.
-    2.3. param 값에 대해 확인한다.(GET)
-
-    """
     def __init__(self):
         self.status = dict()
-        # with open("ArgDict.json", encoding='UTF8') as jsonfile:
-        #     self.jsonData = json.load(jsonfile)
 
     def run(self, logParser):
-        # 1. read_csv() : return csv
         # 2.0. accumulate_by_uri() : return logs
         # 2.1. filter_about_uri(): return [True or False]
         # 2.2. filter_about_tools(): return [True or False] 이상행위에 대한 감지
         # 2.3. filter_about_params(): return [True or False] 공격 탐지 관점
         createFolder("malicious")
+
         for logfile in logParser.file_list:
             self.accumulate_by_uri(logParser, logfile)
             path = logfile.replace('.csv', '')
-            createFolder(f"malicious/{path}")
-            createFolder(f"malicious/{path}/uri")
-            createFolder(f'malicious/{path}/tools')
-            createFolder(f'malicious/{path}/tools/post')
-            createFolder(f'malicious/{path}/tools/get')
-            createFolder(f'malicious/{path}/params')
+
+            createFolderInMalicious(path)
 
             for urifile in os.listdir(path):
                 root, extension = os.path.splitext(urifile)
@@ -135,10 +128,6 @@ class Analyzer():
         return False
 
     def filter_about_tools(self, path, logfile, logParser):
-    # 일정시간마다 작동하는 것과 특정 시간 내에 몇번의 시도가 있는 지를 통해 파악 가능
-    # 동일한 IP, 동일한 경로로 짧은 시간 내에 얼마나 시도를 했는 지를 분석
-    # POST인 경우 브루트 포스로 볼 수 있다.
-    # GET인 경우, 파라미터값이 어떻게 달라지는 지를 봐야한다.
         df = pd.read_csv(f'{path}/{logfile}')
         print(f'{path}/{logfile}')
         postDf = df[df['method'] == "POST"]
@@ -146,6 +135,9 @@ class Analyzer():
         getDf = df[df['method'] == "GET"]
         if not postDf.empty:         
             self.filter_about_tools_post(postDf, path, logfile, logParser)
+        
+        if not getDf.empty:
+            self.filter_about_tools_get(getDf, path, logfile, logParser)
 
     def filter_about_tools_post(self, df, path, logfile, logParser):
         df.set_index('time', inplace=True)
@@ -184,9 +176,8 @@ class Analyzer():
 
         return
             
-
     def filter_about_tools_get(self, df, path, logfile, logParser):
-        
+        print("getdf: ", df)
         return
 
     def filter_about_params(self, path, logfile, logParser):
@@ -223,20 +214,6 @@ class Analyzer():
                     value = param.split("=")[1]
                 except IndexError:
                     continue
-                
-                #if (value.isalpha() | value.isdigit()): continue 
-                
-
-                # Notice : json data는 init에서 미리 열어둠
-                # json에 param가 없는 경우
-                
-                # try: 
-                #     expectedKeyType = self.jsonData[key]
-                
-                # except KeyError:
-                #     # error code 발생시
-                #     if row["status"][0] in [3,4,5]: print("!!danger!! " + value)
-                #     else: pass
                 
                 for dangerParam in dangerParams:
                     if dangerParam in value or dangerParam in key and 'amp' not in key:
@@ -310,8 +287,7 @@ class Analyzer():
                         isMalicious = True
                         break
                 
-                
-
+            
                 if "year" in key.lower() or "month" in key.lower() \
                     or "day" in key.lower() or "time" == key.lower():
                     for i in range(len(value)):
@@ -334,51 +310,6 @@ class Analyzer():
             logParser.save_to_csv(dataQueue, f'malicious/{path}/params/{logfile}')
 
         return
-
-        """
-        filteredtoken = ["..%2F", "%3B", "%3E", "%3C"]
-        df.set_index(['args', 'status'], inplace=True)
-        with open('ArgDict2.json') as json_file:
-            json_data = json.load(json_file)
-        paramIndex = list(set(df.index.tolist()))
-        for rowtuple in paramIndex:
-            try:
-                row = ast.literal_eval(rowtuple[0]) # "[요소, 요소, 요소]" -> [요소, 요소, 요소]
-                status = rowtuple[1]
-                for param in row:
-                    paramtuple = param.split("=")##paramtuple[0]은 파라미터 key, paramtuple[1]은 value
-                    paramtype = self.__check_type(paramtuple[1])
-                    try:
-                        comparetype = json_data[paramtuple[0]]
-                    except:
-                        print(paramtuple[0] + " not found in json")
-                        # elif (json에 arg가 없고 status 에러인경우 ex 302)
-                        if (status == 302):
-                            print("악성")
-                            # return True
-                        comparetype = paramtype
-                    if (paramtype in comparetype):
-                        if (paramtype == "special"):
-                            #   1. 태그가 있는 지(..%2F, %3B, %3E, %3C)
-                            for token in filteredtoken:
-                                if (token in paramtuple[1]):
-                                    print("mal token " + token + " Detected!")
-                                    print("악성")
-                                    # return True
-                            print("정상")
-                            # return False
-                        # if(숫자 or 알파벳 && type in json[arg])
-                        print("정상")
-                        # return False
-                    else:
-                        print("악성: " + param + " type not matches with " + str(comparetype))
-                        print("악성")
-                        # return True
-            except:
-                print("'-' ignored")
-                print("정상")
-                # return False
-        """
 
 def get_parser_from_args():
     

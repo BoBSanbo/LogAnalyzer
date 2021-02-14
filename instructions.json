@@ -11,6 +11,10 @@
         "reboot",
         "sudo",
         "mv",
-        "cp"
+        "cp",
+        "cat",
+        "dir",
+        "echo"
     ]
 }
+

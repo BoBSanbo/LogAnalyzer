@@ -12,6 +12,8 @@
         "version",
         "information_schema",
         "group by",
-        "cmd"
+        "cmd",
+        "alert",
+        "return"
     ]
 }
