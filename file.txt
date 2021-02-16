@@ -438,7 +438,6 @@ etc/master.passwd
 master.passwd
 etc/passwd%00
 administrator/inbox
-dev
 htpasswd
 core/config.php
 boot.ini
@@ -930,7 +929,6 @@ etc%2Fmaster.passwd
 master.passwd
 etc%2Fpasswd%2500
 administrator%2Finbox
-dev
 htpasswd
 core%2Fconfig.php
 boot.ini
@@ -990,7 +988,7 @@ dbadmin
 myadmin
 mysql
 phpmyadmin
-resources/
+resources
 etc/
 administrator
-shell/
+shell
