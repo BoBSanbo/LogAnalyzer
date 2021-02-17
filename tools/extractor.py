@@ -28,4 +28,8 @@ def maltocsv(dirname,maxlength):
     linelist.sort() #for debugging[REMOVABLE]
     print(linelist) #for debugging[REMOVABLE]
 
+    
+################################################
+##악성파일 length보고 넣어주면되는데 현재는 30만으로함##
+################################################
 maltocsv(MALDIR,300000)
