@@ -131,13 +131,13 @@ class Analyzer():
         df = pd.read_csv(f'{path}/{logfile}')
         print(f'{path}/{logfile}')
         postDf = df[df['method'] == "POST"]
-        print(postDf)
+
         getDf = df[df['method'] == "GET"]
         if not postDf.empty:         
             self.filter_about_tools_post(postDf, path, logfile, logParser)
         
         if not getDf.empty:
-            self.filter_about_tools_get(getDf, path, logfile, logParser)
+           self.filter_about_tools_get(getDf, path, logfile, logParser)
 
     def filter_about_tools_post(self, df, path, logfile, logParser):
         df.set_index('time', inplace=True)
@@ -153,15 +153,21 @@ class Analyzer():
         if isinstance(logs, pd.Series):
             logs = pd.DataFrame(logs).transpose()
         dataQueue = logs
-
-        previousTime = datetime.datetime.strptime(previousTime, '%Y-%m-%d %H:%M:%S')
+        
+        try:
+            previousTime = datetime.datetime.strptime(previousTime, '%Y-%m-%d %H:%M:%S')
+        except ValueError:
+            previousTime = datetime.datetime.strptime(previousTime, '%Y-%m-%d %H:%M')
         timeIndex.pop(0)
 
         for row in timeIndex:
-            rowTime = datetime.datetime.strptime(row, '%Y-%m-%d %H:%M:%S')
+            try:
+                rowTime = datetime.datetime.strptime(row, '%Y-%m-%d %H:%M:%S')
+            except ValueError:
+                rowTime = datetime.datetime.strptime(row, '%Y-%m-%d %H:%M')
 
             # 만약 datetime이 연속하지 않다면
-            if rowTime <= previousTime + datetime.timedelta(seconds=2):
+            if rowTime > previousTime + datetime.timedelta(seconds=2):
                 if len(dataQueue) > 5: # 피쳐 값을 제대로 수정하면 될 듯
                     logParser.save_to_csv(dataQueue, f'malicious/{path}/tools/post/{logfile}')
                 dataQueue = pd.DataFrame()
@@ -177,7 +183,85 @@ class Analyzer():
         return
             
     def filter_about_tools_get(self, df, path, logfile, logParser):
-        print("getdf: ", df)
+        from resemblanceCalculator import ResemblanceCalculator as RC
+
+        df.set_index('time', inplace=True)
+        ## 실제 동작할 땐 필요없음(for debugging)
+        df = df.sort_values(by="time" ,ascending=True)
+
+        log = df.iloc[0]
+
+        previousTime = log.name
+
+        try:
+            previousTime = datetime.datetime.strptime(previousTime, '%Y-%m-%d %H:%M:%S')
+        except ValueError:
+            previousTime = datetime.datetime.strptime(previousTime, '%Y-%m-%d %H:%M')
+
+        previousParams = []
+
+        if log['params'] != '-':
+            params = ast.literal_eval(log['params'])
+
+            log = pd.DataFrame(log).transpose()
+            dataQueue = log
+
+            for param in params:
+                try:
+                    key = param.split("=")[0]
+                    previousParams.append(key)
+                except IndexError:
+                    continue
+        
+        for i in range(1, len(df)):
+            row = df.iloc[i, :]
+            if row["params"] == "-": continue
+            params = ast.literal_eval(row["params"])
+            currentParams = []
+            for param in params:
+                try:
+                    key = param.split("=")[0]
+                    currentParams.append(key)
+                except IndexError:
+                    continue
+
+
+            currentTime = datetime.datetime.strptime(row.name, '%Y-%m-%d %H:%M:%S')
+
+            # 만약 datetime이 연속하지 않다면
+            if currentTime > previousTime + datetime.timedelta(seconds=2):
+                if len(dataQueue) > 5: # 피쳐 값을 제대로 수정하면 될 듯
+                    logParser.save_to_csv(dataQueue, f'malicious/{path}/tools/get/{logfile}')
+                dataQueue = pd.DataFrame()
+                continue
+
+            # 만약 파라미터가 유사하지 않다면
+            isResemle = True
+            previousParams.sort()
+            currentParams.sort()
+            for i in range(len(previousParams)):
+                try:
+                    if not RC.get_resemblance(previousParams[i], currentParams[i], 2):
+                        isResemle = False
+                        break
+                except IndexError:
+                    continue
+
+            if not isResemle: 
+                dataQueue = pd.DataFrame()
+                previousParams = currentParams
+
+            # 만약 datetime이 연속하고 파라미터도 유사하다면
+            print("=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=")
+            print(dataQueue)
+            print(df.loc[row])
+            log = df.loc[row]
+            if isinstance(log, pd.Series):
+                log = pd.DataFrame(log).transpose()
+            dataQueue = dataQueue.append(log)
+            previousTime = currentTime
+        
+        
         return
 
     def filter_about_params(self, path, logfile, logParser):
@@ -267,6 +351,9 @@ class Analyzer():
 
                 밸류로 script 문법을 가지는 경우 ex: res.end(require('fs').readdirSync('..').toString())
                 for script in scripts:
+
+                script, backup, WEB-INF, passwd와 같이 의심되는 단어가 파라미터에 포함되는 경우
+                for word in words:
 
                 """
                 ID_DUP_ALLOWED = 1

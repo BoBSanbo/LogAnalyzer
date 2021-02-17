@@ -23,6 +23,7 @@ class LogParser():
         self.pattern_3 = re.compile('(\S+) (\S+) (\S+) (\S+) \[([\w:/]+\s[+\-]\d{4})\] \"(\S+)\s?(\S+)?\s?(\S+)?" (\d{3}) (\S+)')
 
     def parse_to_csv(self, filename, by):
+        ## index 추가하는 코드 
         try: 
             columns = ['ip1','ip2','ip3','ip4','time','method','uri','protocol', 'status', 'bytes']
             df = pd.DataFrame(self.__parse_access_log(self.target_path + "/" + filename, self.pattern_3), columns=columns)
@@ -56,7 +57,7 @@ class LogParser():
         # 고유한 index set을 탐색
         for row in set(df.index.tolist()):
             path = "ip/"+row+".csv"
-            self.save_to_csv(df.loc[row, "time" : "bytes"], path)
+            self.save_to_csv(df.loc[row, :], path)
             
     def parse_by_uri(self, logfile, folder):
         df = self.__read_csv(self.target_path + "/" + logfile)
