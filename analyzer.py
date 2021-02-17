@@ -17,11 +17,11 @@ def createFolder(directory):
 
 def createFolderInMalicious(path):
     createFolder(f"malicious/{path}")
-    createFolder(f"malicious/{path}/uri")
-    createFolder(f'malicious/{path}/tools')
-    createFolder(f'malicious/{path}/tools/post')
-    createFolder(f'malicious/{path}/tools/get')
-    createFolder(f'malicious/{path}/params')
+    # createFolder(f"malicious/{path}/uri")
+    # createFolder(f'malicious/{path}/tools')
+    # createFolder(f'malicious/{path}/tools/post')
+    # createFolder(f'malicious/{path}/tools/get')
+    # createFolder(f'malicious/{path}/params')
 
 class WebLog:
     def __init__(self, ip, dfData):
@@ -84,6 +84,7 @@ class Analyzer():
                 if extension != '.csv':
                     continue
                 if self.filter_about_uri(urifile):
+                    createFolder(f"malicious/{path}/uri")
                     shutil.move(f'{path}/{urifile}', f'malicious/{path}/uri/{urifile}')
                     continue
                 self.filter_about_tools(path, urifile, logParser)
@@ -119,7 +120,7 @@ class Analyzer():
         # uri 상으로 한번 거르고(with file.txt), 에러코드를 반환하는 경우
         uri = logfile.replace('.csv', '').replace('#', '/')
         uri = uri[1:]   #파일명이 //어쩌구로 나와서 맨앞에 slash 없애줌
-        with open("file.txt", 'r', encoding='UTF8') as file:
+        with open("cheatsheet/file.txt", 'r', encoding='UTF8') as file:
             lines = file.readlines()
             for line in lines:
                 if (line[:-1] in uri):  #맨 뒤에 \n이 들어가서 \n소거
@@ -169,6 +170,8 @@ class Analyzer():
             # 만약 datetime이 연속하지 않다면
             if rowTime > previousTime + datetime.timedelta(seconds=2):
                 if len(dataQueue) > 5: # 피쳐 값을 제대로 수정하면 될 듯
+                    createFolder(f'malicious/{path}/tools')
+                    createFolder(f'malicious/{path}/tools/post')
                     logParser.save_to_csv(dataQueue, f'malicious/{path}/tools/post/{logfile}')
                 dataQueue = pd.DataFrame()
                 continue
@@ -184,14 +187,9 @@ class Analyzer():
             
     def filter_about_tools_get(self, df, path, logfile, logParser):
         from resemblanceCalculator import ResemblanceCalculator as RC
-
-        df.set_index('time', inplace=True)
-        ## 실제 동작할 땐 필요없음(for debugging)
-        df = df.sort_values(by="time" ,ascending=True)
-
         log = df.iloc[0]
 
-        previousTime = log.name
+        previousTime = log['time']
 
         try:
             previousTime = datetime.datetime.strptime(previousTime, '%Y-%m-%d %H:%M:%S')
@@ -199,12 +197,10 @@ class Analyzer():
             previousTime = datetime.datetime.strptime(previousTime, '%Y-%m-%d %H:%M')
 
         previousParams = []
+        previousFilename = log['filename']
 
         if log['params'] != '-':
             params = ast.literal_eval(log['params'])
-
-            log = pd.DataFrame(log).transpose()
-            dataQueue = log
 
             for param in params:
                 try:
@@ -213,54 +209,61 @@ class Analyzer():
                 except IndexError:
                     continue
         
+        log = pd.DataFrame(log).transpose()
+        dataQueue = log
+        
         for i in range(1, len(df)):
             row = df.iloc[i, :]
+
             if row["params"] == "-": continue
+
             params = ast.literal_eval(row["params"])
             currentParams = []
+            currentFilename = row['filename']
+
             for param in params:
                 try:
                     key = param.split("=")[0]
                     currentParams.append(key)
                 except IndexError:
                     continue
-
-
-            currentTime = datetime.datetime.strptime(row.name, '%Y-%m-%d %H:%M:%S')
+            try:    
+                currentTime = datetime.datetime.strptime(row['time'], '%Y-%m-%d %H:%M:%S')
+            except ValueError:
+                currentTime = datetime.datetime.strptime(row['time'], '%Y-%m-%d %H:%M')
 
             # 만약 datetime이 연속하지 않다면
             if currentTime > previousTime + datetime.timedelta(seconds=2):
                 if len(dataQueue) > 5: # 피쳐 값을 제대로 수정하면 될 듯
+                    createFolder(f'malicious/{path}/tools')
+                    createFolder(f'malicious/{path}/tools/get')
                     logParser.save_to_csv(dataQueue, f'malicious/{path}/tools/get/{logfile}')
                 dataQueue = pd.DataFrame()
                 continue
 
             # 만약 파라미터가 유사하지 않다면
-            isResemle = True
+            isResemble = True
             previousParams.sort()
             currentParams.sort()
-            for i in range(len(previousParams)):
+
+            for i in range(max(len(previousParams), len(currentParams))):
                 try:
                     if not RC.get_resemblance(previousParams[i], currentParams[i], 2):
-                        isResemle = False
+                        isResemble = False
                         break
                 except IndexError:
-                    continue
+                    isResemble = False
+                    break
 
-            if not isResemle: 
+            if not isResemble: 
                 dataQueue = pd.DataFrame()
                 previousParams = currentParams
 
             # 만약 datetime이 연속하고 파라미터도 유사하다면
-            print("=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=")
-            print(dataQueue)
-            print(df.loc[row])
-            log = df.loc[row]
-            if isinstance(log, pd.Series):
-                log = pd.DataFrame(log).transpose()
+            if isinstance(row, pd.Series):
+                log = pd.DataFrame(row).transpose()
             dataQueue = dataQueue.append(log)
             previousTime = currentTime
-        
         
         return
 
@@ -275,7 +278,7 @@ class Analyzer():
             r"..%2f", r"%2e%2e%5c", r"%2e%2e\\", r"..%5c", r"%252e%252e%255c", r"..%255c", r"..%c0%af", r"..%c1%9c"\
                 r';', r'<', r'>', r'"', r"'", r'(', r')']  
 
-        with open('fileExtensions.json') as json_file:
+        with open('cheatsheet/fileExtensions.json') as json_file:
             fileExtensions = json.load(json_file)["extensions"]
 
         domainRe = r'[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)'
@@ -306,7 +309,6 @@ class Analyzer():
                         log = pd.DataFrame(row).transpose()
                         dataQueue = dataQueue.append(log)
                         isMalicious = True
-                        #print(dataQueue)
                         break
                 
                 # key에 url이 없는데 url이 있을경우
@@ -344,18 +346,41 @@ class Analyzer():
                     dataQueue = dataQueue.append(log)
                     isMalicious = True
                     break
-
-                """
-                ls와 같이 명령어를 밸류로 가지는 경우
+                
+                #ls와 같이 명령어를 밸류로 가지는 경우
+                with open('cheatsheet/instructions.json') as json_file:
+                    instructions = json.load(json_file)["instructions"]
+                
                 for instruction in instructions:
+                    if instruction in value:
+                        log = pd.DataFrame(row).transpose()
+                        dataQueue = dataQueue.append(log)
+                        isMalicious = True
+                        break
 
-                밸류로 script 문법을 가지는 경우 ex: res.end(require('fs').readdirSync('..').toString())
+                #밸류로 script 문법을 가지는 경우 ex: res.end(require('fs').readdirSync('..').toString())
+                with open('cheatsheet/scripts.json') as json_file:
+                    scripts = json.load(json_file)["scripts"]
+
                 for script in scripts:
+                    if script in value:
+                        log = pd.DataFrame(row).transpose()
+                        dataQueue = dataQueue.append(log)
+                        isMalicious = True
+                        break
+                    
+                #script, backup, WEB-INF, passwd와 같이 의심되는 단어가 파라미터에 포함되는 경우
+                with open('cheatsheet/words.json') as json_file:
+                    words = json.load(json_file)["words"]
 
-                script, backup, WEB-INF, passwd와 같이 의심되는 단어가 파라미터에 포함되는 경우
                 for word in words:
+                    if word in value:
+                        log = pd.DataFrame(row).transpose()
+                        dataQueue = dataQueue.append(log)
+                        isMalicious = True
+                        break
 
-                """
+                
                 ID_DUP_ALLOWED = 1
 
                 if "id" in key.lower():
@@ -391,6 +416,7 @@ class Analyzer():
                         
 
         if isMalicious:
+            createFolder(f'malicious/{path}/params')
             print("=========================================================")
             print(dataQueue)
             print("=========================================================")

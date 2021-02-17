@@ -23,7 +23,6 @@ class LogParser():
         self.pattern_3 = re.compile('(\S+) (\S+) (\S+) (\S+) \[([\w:/]+\s[+\-]\d{4})\] \"(\S+)\s?(\S+)?\s?(\S+)?" (\d{3}) (\S+)')
 
     def parse_to_csv(self, filename, by):
-        ## index 추가하는 코드 
         try: 
             columns = ['ip1','ip2','ip3','ip4','time','method','uri','protocol', 'status', 'bytes']
             df = pd.DataFrame(self.__parse_access_log(self.target_path + "/" + filename, self.pattern_3), columns=columns)
@@ -36,9 +35,9 @@ class LogParser():
         df.time = pd.to_datetime(df.time, format='%d/%b/%Y:%X', exact=False)
 
         df2 = df.sort_values(by=by ,ascending=True)
-
+        df2.index.name = 'idx'
         # Save Data to CSV
-        df2.to_csv("csv/"+filename+".csv", index=False)
+        df2.to_csv("csv/"+filename+".csv", index=True)
 
     def __parse_access_log(self, path, pattern):
         for line in open(path):
@@ -86,7 +85,6 @@ class LogParser():
             path = f"{folder}/"+directory+".csv"
             self.save_to_csv(pd.DataFrame(series2).transpose(), path)
 
-    # def parseByExtension(self):
     def parse_by_status(self, logfile):
         df = self.__read_csv(self.target_path + "/" + logfile)
         df.set_index('status', inplace=True)

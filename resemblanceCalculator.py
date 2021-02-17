@@ -28,7 +28,6 @@ class ResemblanceCalculator():
         c1 = intersection_size / len(s1) # containment : s1에 s1과 s2의 교집합이 얼마나 포함되어있는가
         c2 = intersection_size / len(s2)
 
-        print(resemblance, c1, c2)
         if resemblance > 0.6:
             return True
 
