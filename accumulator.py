@@ -18,7 +18,7 @@ class Accumulator():
 
     def malicious_to_csv(self, dirname, maxlength):
         linelist=[] #for debugging[REMOVABLE]
-        df=pd.DataFrame({'col':[0 for i in range(maxlength)]})
+        df=pd.DataFrame({'result':[0 for i in range(maxlength)]})
         filelist=self.files_in_dir(dirname)
         for filepath in filelist:
             file=pd.read_csv(filepath)
@@ -26,8 +26,9 @@ class Accumulator():
             for line in file:
                 linelist.append(line) #for debugging[REMOVABLE]
                 df['col'][line]=1
+        df.index.name = 'col'
         df.to_csv('result.csv')
-        print("COMPLETED")
+        print("====================================COMPLETED===========================================")
         linelist.sort() #for debugging[REMOVABLE]
         print(linelist) #for debugging[REMOVABLE]
 

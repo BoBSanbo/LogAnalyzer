@@ -9,6 +9,7 @@ ip/
 csv_temp/
 csv_server2/
 malicious/
+test/
 
 *.csv
 *.zip

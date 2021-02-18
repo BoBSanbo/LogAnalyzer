@@ -142,8 +142,6 @@ class Analyzer():
 
     def filter_about_tools_post(self, df, path, logfile, logParser):
         df.set_index('time', inplace=True)
-        ## 실제 동작할 땐 필요없음(for debugging)
-        df = df.sort_values(by="time" ,ascending=True)
 
         timeIndex = list(set(df.index.tolist()))
 

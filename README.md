@@ -13,7 +13,7 @@ python main.py -h
 
 실행 방법
 
-usage: python main.py [-h] -p PATH -t {d,f} [-e {csv,txt}] -f {toCsv,byIp,byUri,byStatus,bySize,byTag,byArg}
+usage: python main.py [-h] -p PATH [-e {csv,txt}] -f {toCsv,byIp,byUri,byStatus,bySize,byTag,byArg, all}
 
 **주의사항**
 
@@ -21,11 +21,11 @@ usage: python main.py [-h] -p PATH -t {d,f} [-e {csv,txt}] -f {toCsv,byIp,byUri,
 
     ex) python main.py -p test -t d -f toCsv
 
-2. 만들어진 CSV 파일에 대해 byIP 혹은 byUri 함수를 실행할 것
+2. 만들어진 CSV 파일에 대해 함수를 실행할 것
 
-    ex) python main.py -p csv/{filename} -t f -f byIp
+    ex) python main.py -p csv/{filename} -f byIp
     
-        python main.py -p csv -t d -f byUri
+        python main.py -p csv -f all
 
 
 
@@ -46,31 +46,33 @@ usage: python main.py [-h] -p PATH -t {d,f} [-e {csv,txt}] -f {toCsv,byIp,byUri,
     - parse_by_arg: Arg 별로 값을 저장하는 메서드
 
 
-**parse_by_ip를 제외한 나머지 메서드들은 분석을 쉽게하기 위해 파일들을 분류하는 것**
-
-**실제로 분석할 때는 아마도 IP별로 분류된 파일들을 위주로 분석되지 않을까 생각**
+**parse_by_ip를 제외한 나머지 메서드들은 분석 인사이트를 얻기위해 만들어진 메서드**
 
 
 - Analyzer
     파싱한 로그들을 분석하는 객체
 
+    메서드
+    - run
+        IP별로 분류된 로그파일을 읽어들여 아래의 메서드들을 순차적으로 실행시키는 메서드
+    - accumulate_by_uri
+        로그파일을 URI 별로 재분류하는 메서드
+    - filter_about_uri
+        URI 별로 분류된 로그파일을 읽어들여 의심가는 URI에 대해 처리
+    - filter_about_tools
+        tool 사용이 의심가는 로그들(일정 시간동안 동일한 경로로 특정 수치이상 요청 등)에 대해 처리
+    - filter_about_tools_post
+        POST 메서드에 대해 처리
+    - filter_about_tools_get
+        이전 로그와 파라미터 유사도를 측정하여 GET 메서드 로그들에 대해 처리
+    - filter_about_params
+        파라미터의 키-밸류를 분석하여, 의심가는 로그들을 처리
+
+
 - Accumulator
     분석결과를 수집하는 객체
 
-- Extarctor
-    수집한 최종 결과를 파일로 추출하는 객체
 
 
-### To Do
 
-1. POST인데 파라미터가 있는 경우는?
-2. tools - GET에 대해 정확한 방법
-3. Params
-    1. 키 중 파일확장자를 밸류로 가질 수 있는 키
-    2. 파일 확장자에 대한 정보
-    3. ls와 같이 명령어를 밸류로 가지는 경우
-    4. 밸류로 script 문법을 가지는 경우 ex: res.end(require('fs').readdirSync('..').toString()) / union select -> cuid.csv를 살펴볼 것
-    5. 특정 문자를 여러번 반복하면?? -> 현재 특수문자지만, 특정 한 문자(숫자 제외)를 반복하는 거면 공격이라고 봐도 되지 않을까?
-    6. id가 들어간 key에 대해 특수문자가 2(or 3)개 이상 나오는 경우? 
-    7. status가 1 or 0 시도를 했을 때, 모두 302를 리턴했다..
-4. size 특정 사이즈 크기 이상이면 ??
+
